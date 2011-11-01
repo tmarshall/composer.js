@@ -86,6 +86,20 @@
 						</td>
 					</tr>
 					<tr>
+						<td>Event triggering</td>
+						<td>
+							Supports passing a {silent: true} object to silence all events during an operation.
+						</td>
+						<td>
+							Supports passing a {silent: true} object to silence all events during an operation.
+						</td>
+						<td>
+							Supports passing a {silent: true} object to silence all events during an operation, but also supports
+							passing {not_silent: ['add', 'reset']} object to tell the framework "the only events that are allowed
+							to fire during this operation are 'add' and 'reset'"
+						</td>
+					</tr>
+					<tr>
 						<td>Supporting libraries</td>
 						<td>
 							One-file library.
