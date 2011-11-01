@@ -1,0 +1,52 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary, time, mark, audio, video { margin: 0; padding: 0; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; }
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section { display: block; }
+body { line-height: 1; }
+ol, ul { list-style: none; }
+blockquote, q { quotes: none; }
+blockquote:before, blockquote:after,
+q:before, q:after { content: ''; content: none; }
+table { border-collapse: collapse; border-spacing: 0; }
+
+.clear:after {content: "."; display: block; height: 0; clear: both; visibility: hidden;}
+.clear {display: inline-block;}
+/* hide IE mac \*/
+* html .clear {height: 1%;}
+.clear {display: block;}
+/* */
+
+
+body {font-family: arial; color: #333; font-size: 14px; line-height: 1.4em; background: #fff;}
+h1, h2, h3, h4 {font-weight: bold;}
+h1 {font-size: 32px; margin: 16px 0 16px -16px;}
+h1:first-child {margin-top: 0;}
+h2 {font-size: 24px; margin: 0 0 12px -8px; padding: 6px; background: #f0f0f0;}
+h3 {font-size: 18px; margin: 0 0 9px 0;}
+h3 small {font-size: 14px; font-weight: normal; margin: 0 0 0 12px;}
+h4 {font-size: 16px; margin: 0 0 8px 0;}
+p {padding: 0 0 16px 0;}
+strong {font-weight: bold;}
+ul {list-style: disc; margin: 0 0 10px 32px;}
+pre {padding: 0 16px; margin: 0 0 16px 0; color: #622; font-family: monospace; font-size: 12px; border-left: 2px solid #888;}
+
+#container {padding: 20px;}
+
+#nav {position: fixed; float: left; width: 18%; padding: 10px 2%; background: #f0f0f0;}
+#nav ul {list-style: none; margin: 0; padding: 0;}
+#nav ul ul {margin: 0 0 0 16px;}
+#nav ul ul a {color: #226;}
+#content {float: right; width: 72%; padding: 0 2%;}
+
+table.compare {width: 80%; margin: 0 20px 16px 20px; border-collapse: collapse;}
+table.compare th {padding: 2px 12px; text-align: left; font-weight: bold; color: #ddd; border: 1px solid #333; background: #333;}
+table.compare th a {color: #99e}
+table.compare td {padding: 6px 12px; border: 1px solid #333;}
+table.compare th:first-child {font-weight: normal;}
+table.compare td:first-child {font-weight: bold;}

@@ -1,1 +1,212 @@
-hai
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-language" content="en" />
+
+		<title>Composer.js - overview and documentation</title>
+
+
+		<link rel="stylesheet" type="text/css" href="doc.css" />
+	</head>
+	<body>
+		<div id="container" class="clear">
+			<div id="nav">
+				<ul>
+					<li>
+						<a href="#overview">Overview</a>
+						<ul>
+							<li><a href="#overview:diff">Framework comparison</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#api">API</a>
+						<ul>
+							<li><a href="#api:events">Events</a></li>
+							<li><a href="#api:model">Model</a></li>
+							<li><a href="#api:collection">Collection</a></li>
+							<li><a href="#api:controller">Controller</a></li>
+							<li><a href="#api:router">Router</a></li>
+							<li><a href="#api:sync">sync</a></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+
+			<div id="content">
+				<h1 id="overview">Composer.js</h1>
+				<p>
+					Composer.js is a javascript MVC framework for <a href="http://mootools.net/">Mootools</a> that helps you grow 
+					and manage your front-end javascript application by splitting out separate pieces of functionality using the 
+					Model View Controller design pattern.
+				</p>
+				<p>
+					Composer.js borrows (and in some cases takes directly from) two incredible existing JS frameworks,
+					<a href="http://documentcloud.github.com/backbone/">backbone.js</a> and <a href="http://spinejs.com/">spine</a>, 
+					taking from both where we felt they were successful. The javascript world was lacking a Mootools alternative to
+					these frameworks, so we built Composer.js.
+				</p>
+
+				<h2 id="overview:diff">Framework comparison</h2>
+				<p>
+					How is composer.js different from backbone and spine?
+				</p>
+				<table class="compare" cellpadding="0" cellspacing="0" border="0">
+					<tr>
+						<th width="10%">Feature</th>
+						<th width="30%"><a href="http://documentcloud.github.com/backbone/">Backbone.js</a></th>
+						<th width="30%"><a href="http://spinejs.com/">Spine</a></th>
+						<th width="30%">Composer.js</th>
+					</tr>
+					<tr>
+						<td>Collections</td>
+						<td>
+							Has a separate object for collections. Models are explicitely added to collections.
+						</td>
+						<td>
+							"Collections" are just a set of static member functions. Any instantiated model of a certain
+							type is implicitely added to that model's collection.
+						</td>
+						<td>
+							Has a separate object for collections. Models are explicitely added to collections. 
+							<strong>Models can exist in multiple collections.</strong>
+						</td>
+					</tr>
+					<tr>
+						<td>REST/ajax</td>
+						<td>
+							Has server-side data syncing which uses REST-type URLs to CRUD data.
+						</td>
+						<td>
+							Has server-side data syncing which uses REST-type URLs to CRUD data.
+						</td>
+						<td>
+							Assumes nothing about your data syncing and provides a supporting API to implement this yourself.
+							We plan to eventually emulate the other two frameworks, but this is not the highest priority.
+						</td>
+					</tr>
+					<tr>
+						<td>Supporting libraries</td>
+						<td>
+							One-file library.
+						</td>
+						<td>
+							Has multiple files dealing with different sets of functionality. Overall, has the most supporting
+							libraries and functions.
+						</td>
+						<td>
+							One-file library.
+						</td>
+					</tr>
+					<tr>
+						<td>"Controller" vs "View"</td>
+						<td>View</td>
+						<td>Contoller</td>
+						<td>Controller</td>
+					</tr>
+					<tr>
+						<td>Framework</td>
+						<td>jQuery</td>
+						<td>jQuery</td>
+						<td>Mootools</td>
+					</tr>
+				</table>
+				<p>
+					Note that this table is meant to highlight the differences. There are many more similarities between the
+					frameworks.
+				</p>
+
+				<h1 id="api">API</h1>
+				<p>
+					This is the actual documentation of the Composer.js programming API.
+				</p>
+				<h2 id="api:events">Events</h2>
+				<p>
+					Events are the main way different pieces of your application communicate with each other. Events are also
+					used by the framework itself to notify your application of changes to data or interfaces.
+				</p>
+				<p>
+					The <a href="#api:model">Model</a>, <a href="#api:collection">Collection</a>, and
+					<a href="#api:Controller">Controller</a> objects all implement Events, so anything available in events is
+					available in instances of these objects as well.
+				</p>
+				<p>
+					Example of event being used in your app:
+				</p>
+				<pre>
+var MyController = Composer.Controller.extend({ ...  });
+
+var con = new MyController();
+con.bind('alertme', function(name) {
+	alert('Hai, '+ name +', this is your alert');
+});
+con.trigger('alertme', 'Andrew') </pre>
+				<p>
+					Example of event being used by the framework:
+				</p>
+				<pre>var Note = Composer.Model.extend();
+var mynote = new Note({ text: 'get a job' });
+mynote.bind('change', function(note) {
+	alert('Your note changed: '+ note.get('text'));
+});
+mynote.set({ text: 'my goat hurts' });</pre>
+				<p>
+					The framework triggers events when certain actions happen in your Models or Collections.
+				</p>
+
+
+				<h3 id="api:events:bind">Events.bind <small>object.bind(event_name, callback)</small></h3>
+				<p>
+					Binds an event to object. The event under "event_name" can be an arbitrary string, or an event used by
+					Composer.js internally. 
+				</p>
+				<p>
+					There are two special events to be aware of:
+				</p>
+				<ul>
+					<li>
+						<h4>all</h4>
+						<p>
+							The "all" event is triggered <em>whenever</em> another event is triggered:
+						</p>
+						<pre>mymodel.bind('all', function() { alert('something happened!!!!!!!1'); });
+mymodel.trigger('make_babies');		// <- this will trigger the "all" event</pre>
+
+					</li>
+					<li>
+						<h4>change:[model key]</h4>
+						<p>
+							The "change" event is called whenever a model is changed using Model.set(). However, for each key
+							in the model that was changed, a specific event will be triggered for that key:
+						</p>
+						<pre>var mymodel = new MyModel({name: 'larry', age: 54});
+mymodel.bind('change:name', function(model, value) {
+	alert('The new name of the model is '+ value);
+});
+mymodel.set({ age: 43 });		// <- this will NOT trigger the above event
+mymodel.set({ name: 'suzy' });		// <- this will trigger the event, because the name changed</pre>
+					</li>
+				</ul>
+				<h3 id="api:events:bind">Events.trigger <small>object.trigger(event_name, [arg1, [arg2, ...]])</small></h3>
+				<p>
+					Trigger the given event of an object. If no callbacks are bound to this event, nothing will happen. If there
+					are callbacks bound, they will be called in the order they were bound to the object.
+				</p>
+				<p>
+					An arbitrary number of arguments can be passed into the trigger function, each of those being passed directly
+					into each callback being triggered:
+				</p>
+				<pre>mycontroller.bind('tag_clicked', function(tag_name, user_name) {
+	alert('user '+ user_name + 'clicked the tag "'+ tag_name +'"');
+});
+mycontroller.trigger('tag_clicked', 'fisting', 'larry');</pre>
+				<h2 id="api:model">Model</h2>
+				<h2 id="api:collection">Collection</h2>
+				<h2 id="api:controller">Controller</h2>
+				<h2 id="api:router">Router</h2>
+				<h2 id="api:sync">sync</h2>
+			</div>
+		</div>
+	</body>
+</html>
+
