@@ -1422,8 +1422,7 @@
 		return {
 			extend: function(obj)
 			{
-				// If you didn't pass an object, then make an empty one
-				if (typeof(obj) == 'undefined') obj = {};
+				obj || (obj = {});
 				
 				if(obj.initialize)
 				{
