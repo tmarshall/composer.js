@@ -23,30 +23,35 @@ table { border-collapse: collapse; border-spacing: 0; }
 /* */
 
 
-body {font-family: arial; color: #333; font-size: 14px; line-height: 1.4em; background: #fff;}
+body {font-family: arial; color: #333; font-size: 14px; line-height: 1.5em; background: #fff;}
 h1, h2, h3, h4 {font-weight: bold;}
-h1 {font-size: 32px; margin: 16px 0 16px -16px;}
+h1 {font-size: 32px; margin: 16px 0 30px -16px;}
 h1:first-child {margin-top: 0;}
-h2 {font-size: 24px; margin: 0 0 12px -8px; padding: 6px; background: #f0f0f0;}
-h3 {font-size: 18px; margin: 0 0 9px 0;}
-h3 small {font-size: 14px; font-weight: normal; margin: 0 0 0 12px;}
+h2 {font-size: 24px; margin: 10px 0 12px -8px; padding: 12px 6px; border-bottom: 1px dotted #aaa; }
+h3 {font-size: 18px; margin: 25px 0 9px 0;}
+h3 small {font-size: 13px; font-weight: normal; font-family: monospace; margin: 0 0 0 12px;}
 h4 {font-size: 16px; margin: 0 0 8px 0;}
 p {padding: 0 0 16px 0;}
 strong {font-weight: bold;}
 ul {list-style: disc; margin: 0 0 10px 32px;}
-pre {padding: 0 16px; margin: 0 0 16px 0; color: #622; font-family: monospace; font-size: 12px; border-left: 2px solid #888;}
+pre {padding: 0 15px; margin: 0 0 30px 0; color: #622; font-family: monospace; font-size: 12px; border-left: 5px solid #ddd;}
+button { display: block; margin-top: 20px; cursor: pointer; }
+code { border: 1px solid #ddd; padding: 0px 4px; background: #f0f0f0; font-family: monospace; font-size: .85em; }
+code a { color: #333; cursor: pointer; }
 
 #container {padding: 20px;}
 
-#nav {position: fixed; float: left; width: 18%; padding: 10px 2%; background: #f0f0f0;}
+#nav {position: fixed; float: left; width: 15%; padding: 10px 2%; border-right: 1px dotted #aaa; }
 #nav ul {list-style: none; margin: 0; padding: 0;}
-#nav ul ul {margin: 0 0 0 16px;}
+#nav ul li { margin-top: 15px; }
+#nav ul ul { margin-left: 15px; list-style-type: square; }
+#nav ul ul li { margin-top: 0px; }
 #nav ul ul a {color: #226;}
 #content {float: right; width: 72%; padding: 0 2%;}
 
 table.compare {width: 80%; margin: 0 20px 16px 20px; border-collapse: collapse;}
-table.compare th {padding: 2px 12px; text-align: left; font-weight: bold; color: #ddd; border: 1px solid #333; background: #333;}
+table.compare th {padding: 4px 12px; text-align: left; font-weight: bold; color: #ddd; background: #444;}
 table.compare th a {color: #99e}
-table.compare td {padding: 6px 12px; border: 1px solid #333;}
+table.compare td {padding: 6px 12px 15px; }
 table.compare th:first-child {font-weight: normal;}
-table.compare td:first-child {font-weight: bold;}
+table.compare td:first-child {font-weight: bold; background: #eee; }
