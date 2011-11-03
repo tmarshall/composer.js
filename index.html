@@ -47,7 +47,7 @@
 				<li><a href="#api:model:get_url">get_url</a></li>
 				<li><a href="#api:model:base_url">base_url</a></li>
 				<li><a href="#api:model:collections">collections</a></li>
-				<li><a href="#api:model:get_highest_priority_collection">get_highest_priority_collection</a></li>
+				<li><a href="#api:model:highest_priority_collection">highest_priority_collection</a></li>
 			</ul>
 		</li>					
 		<li><a href="#api:collection">Collection</a></li>
@@ -500,6 +500,16 @@ one.set({
 	end:   10
 });</pre>
 
+<p>
+	<code>"error"</code> events are useful for providing coarse-grained error messages at the model or collection level, but if you have a specific
+	view that can better handle the error, you may override and suppress the event by passing an <code>error</code> callback directly:
+</p>
+<pre>account.set({access: "unlimited"}, {
+	error: function(model, error) {
+		alert(error);
+	}
+});</pre>
+
 <h3 id="api:model:get_url">Model.get_url <small>model.get_url()</small></h3>
 <p>
 	Returns the relative URL where the model's resource would be located on the server. Generates URLs of the form: <code>"/[collection url]/[id]",</code>
@@ -538,7 +548,7 @@ alert((new Bunny).get_url());</pre>
 <h3 id="api:model:base_url">Model.base_url <small>model.base_url</small></h3>
 <p>
 	Specify a <code>base_url</code> if you're using a model outside of a collection to enable the <code><a href="#api:model:get_url">get_url</a></code>
-	function to generate URLs based on the model id.
+	method to generate URLs based on the model id.
 </p>
 <pre class="runnable">// Demonstrates using a base_url to generate a relative path
 var Bunny = Composer.Model.extend({
@@ -548,6 +558,24 @@ var chuckles = new Bunny({
 	id: 1
 });
 alert(chuckles.get_url());</pre>
+
+<h3 id="api:model:collections">Model.collections <small>model.collections</small></h3>
+<p>
+	Contains references to the collection(s) the model is in. The collection with the highest <code>priority</code> property value is used when deriving
+	the model's URL via the <code><a href="#api:model:get_url">Model.get_url</a></code> method (which delegates to 
+	<code><a href="#api:collection:get_url">Collection.get_url</a></code>).
+</p>
+
+<h3 id="api:model:highest_priority_collection">Model.highest_priority_collection <small>model.highest_priority_collection()</small></h3>
+<p>
+	Returns a reference to the collection
+</p>
+<pre class="runnable">var Bunny = Composer.Model.extend();
+	
+var chuckles = new Bunny({id:3});
+
+alert(chuckles.get_url());
+</pre>
 
 <h2 id="api:collection">Collection</h2>
 <h2 id="api:controller">Controller</h2>
