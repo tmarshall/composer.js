@@ -216,8 +216,11 @@
 		 */
 		initialize: function(data, options)
 		{
-			// merge the defaults into the data
-			data	=	Object.merge(this.defaults, data);
+			data || (data = {});
+
+			// merge the defaults into the data (note the Object.clone(...) around 
+			// defaults, which fixes a bug that was popping up). 
+			data	=	Object.merge(Object.clone(this.defaults), data);
 
 			// set the data into the model (but don't trigger any events)
 			this.set(data, {silent: true});
