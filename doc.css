@@ -41,11 +41,11 @@ code a { color: #333; cursor: pointer; }
 
 #container {padding: 20px;}
 
-#nav {position: fixed; float: left; width: 15%; padding: 10px 2%; border-right: 1px dotted #aaa; }
+#nav {position: fixed; float: left; width: 15%; height: 95%; overflow: auto; padding: 0px 2%; border-right: 1px dotted #aaa; }
 #nav ul {list-style: none; margin: 0; padding: 0;}
 #nav ul li { margin-top: 15px; }
 #nav ul ul { margin-left: 15px; list-style-type: square; }
-#nav ul ul li { margin-top: 0px; }
+#nav ul ul li { margin-top: 0px; font-size: .9em; }
 #nav ul ul a {color: #226;}
 #content {float: right; width: 72%; padding: 0 2%;}
 

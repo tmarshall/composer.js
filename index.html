@@ -42,6 +42,12 @@
 				<li><a href="#api:model:defaults">defaults</a></li>
 				<li><a href="#api:model:fetch">fetch</a></li>
 				<li><a href="#api:model:save">save</a></li>
+				<li><a href="#api:model:destroy">destroy</a></li>
+				<li><a href="#api:model:validate">validate</a></li>
+				<li><a href="#api:model:get_url">get_url</a></li>
+				<li><a href="#api:model:base_url">base_url</a></li>
+				<li><a href="#api:model:collections">collections</a></li>
+				<li><a href="#api:model:get_highest_priority_collection">get_highest_priority_collection</a></li>
 			</ul>
 		</li>					
 		<li><a href="#api:collection">Collection</a></li>
@@ -362,6 +368,10 @@ var jeff = new Employee({
 });
 
 alert(jeff.id());</pre>
+<p>
+	By default, the id key is the string <code>"id"</code>, but you can override this with the <code>Model.id_key</code> property. This can be
+	useful, for example, if you're using MongoDB and your ids are stored in the <code>_id</code> property.
+</p>
 
 <h3 id="api:model:data">Model.data <small>model.data</small></h3>
 <p>
@@ -416,8 +426,8 @@ person.fetch();</pre>
 <p>
 	Save a model to your database (or alternative persistence layer), by delegating to <code><a href="#api.sync">Composer.sync</a></code>.
 	The <strong>attributes</strong> object
-	(as in <code><a href="#api:model:set">set</a></code>) should contain the attributes you'd like to change &mdash; <u>keys that aren't
-	mentioned won't be altered.</u><sup>???</sup> If the model has a validate method, and validation fails, the model will not be saved. If
+	(as in <code><a href="#api:model:set">set</a></code>) should contain the attributes you'd like to change in the process.
+	If the model has a validate method, and validation fails, the model will not be saved. If
 	the model <code><a href="#api:model:is_new">is_new()</a></code>, the save will be a <code>"create"</code> (HTTP <code>POST</code>), if the
 	model already exists on	the server, the save will be an	<code>"update"</code> (HTTP <code>PUT</code>).
 </p>
@@ -448,6 +458,96 @@ my_book.save({author: "Jeff"});		// sync does an "update"</pre>
 	in text or JSON.
 </p>
 <pre>my_book.save({author: "F.D.R."}, {error: function(){ ... }});</pre>
+
+<h3 id="api:model:destroy">Model.destroy <small>model.destroy([options])</small></h3>
+<p>
+	Destroys the model on the server by delegating an HTTP <code>DELETE</code> request to <code><a href="#api:sync">Composer.sync</a></code>.
+	Accepts <code>success</code> and <code>error</code> callbacks in the options object. Triggers a <code>"destroy"</code> event on the model,
+	which will bubble up through any collections that contain it.
+</p>
+
+<pre>my_book.destroy({success: function(model, response) {
+  ...
+}});</pre>
+
+<h3 id="api:model:validate">Model.validate <small>model.validate(attributes)</small></h3>
+<p>
+	This method is left undefined, and you're encouraged to override it with your custom validation logic, if you have any that can be
+	performed in JavaScript. <strong>validate</strong> is called before <code>set</code> and <code>save</code>, and is passed the attributes
+	that are about to be updated. If the model and attributes are valid, don't return anything from <strong>validate</strong>; if the
+	attributes are invalid, return an <code>error</code> of your choosing. It can be as simple as a string error message to be displayed,
+	or a complete error object that describes the error programmatically. <code>set</code> and <code>save</code> will not continue if
+	<strong>validate</strong> returns an error. Failed validations trigger an <code>"error"</code> event.
+</p>
+<pre>var Chapter = Composer.Model.extend({
+	validate: function(attrs) {
+		if (attrs.end < attrs.start) {
+			return "can't end before it starts";
+		}
+	}
+});
+
+var one = new Chapter({
+	title : "Chapter One: The Beginning"
+});
+
+one.bind("error", function(model, error) {
+	alert(model.get("title") + " " + error);
+});
+
+one.set({
+	start: 15,
+	end:   10
+});</pre>
+
+<h3 id="api:model:get_url">Model.get_url <small>model.get_url()</small></h3>
+<p>
+	Returns the relative URL where the model's resource would be located on the server. Generates URLs of the form: <code>"/[collection url]/[id]",</code>
+	falling back to	<code>"/[<a href="#api:model:base_url">base_url</a>]/[id]"</code> if the model is not part of a collection.
+</p>
+<p>
+	Delegates to the <code><a href="#api:collection:get_url">Collection.get_url</a></code> method of the highest priority collection that the model
+	belongs to in order to generate the URL. Make sure that you have a
+	<code>Collection.url</code> defined, or a <a href="#api:model:base_url">Model.base_url</a> property, if all models of this class share a common root
+	URL. A model with an id of 101, stored in a <code><a href="#api:collection">Composer.Collection</a></code> with a <code>url</code> of
+	<code>"/documents/7/notes"</code>, would have this URL: <code>"/documents/7/notes/101"</code>
+</p>
+<pre class="runnable">// Demonstrates getting a model's url based on the collection's URL
+var Bunny = Composer.Model.extend({});
+
+var BunniesCollection = Composer.Collection.extend({
+	model: Bunny,
+	url: '/bunnies'
+});
+
+var chuckles = new Bunny({
+	id: 1
+});
+
+var collection = new BunniesCollection([chuckles]);
+
+alert(chuckles.get_url());</pre>
+
+<p>You can override the default behavior and explicitly specify a model's URL by setting the <code>Model.url</code> property:</p>
+<pre class="runnable">var Bunny = Composer.Model.extend({
+	url:	'/bunny_bunny_bunny'
+});
+
+alert((new Bunny).get_url());</pre>
+
+<h3 id="api:model:base_url">Model.base_url <small>model.base_url</small></h3>
+<p>
+	Specify a <code>base_url</code> if you're using a model outside of a collection to enable the <code><a href="#api:model:get_url">get_url</a></code>
+	function to generate URLs based on the model id.
+</p>
+<pre class="runnable">// Demonstrates using a base_url to generate a relative path
+var Bunny = Composer.Model.extend({
+	base_url:	'/bunny'
+});
+var chuckles = new Bunny({
+	id: 1
+});
+alert(chuckles.get_url());</pre>
 
 <h2 id="api:collection">Collection</h2>
 <h2 id="api:controller">Controller</h2>
