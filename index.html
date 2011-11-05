@@ -29,7 +29,7 @@
 			<a href="#api:model">Model</a>
 			<ul>
 				<li><a href="#api:model:extend">extend</a></li>
-				<li><a href="#api:model:constructor">init (constructor)</a></li>
+				<li><a href="#api:model:constructor">init / constructor</a></li>
 				<li><a href="#api:model:set">set</a></li>
 				<li><a href="#api:model:unset">unset</a></li>
 				<li><a href="#api:model:get">get</a></li>
@@ -37,6 +37,7 @@
 				<li><a href="#api:model:has">has</a></li>
 				<li><a href="#api:model:clear">clear</a></li>
 				<li><a href="#api:model:id">id</a></li>
+				<li><a href="#api:model:cid">cid</a></li>
 				<li><a href="#api:model:data">data</a></li>
 				<li><a href="#api:model:toJSON">toJSON</a></li>
 				<li><a href="#api:model:defaults">defaults</a></li>
@@ -46,11 +47,42 @@
 				<li><a href="#api:model:validate">validate</a></li>
 				<li><a href="#api:model:get_url">get_url</a></li>
 				<li><a href="#api:model:base_url">base_url</a></li>
+				<li><a href="#api:model:url">url</a></li>
 				<li><a href="#api:model:collections">collections</a></li>
 				<li><a href="#api:model:highest_priority_collection">highest_priority_collection</a></li>
+				<li><a href="#api:model:parse">parse</a></li>
+				<li><a href="#api:model:clone">clone</a></li>
+				<li><a href="#api:model:is_new">is_new</a></li>
 			</ul>
 		</li>					
-		<li><a href="#api:collection">Collection</a></li>
+		<li>
+			<a href="#api:collection">Collection</a>
+			<ul>
+				<li><a href="#api:collection:extend">extend</a></li>
+				<li><a href="#api:collection:model">model</a></li>
+				<li><a href="#api:collection:constructor">init / constructor</a></li>
+				<li><a href="#api:collection:models">models</a></li>
+				<li><a href="#api:collection:toJSON">toJSON</a></li>
+				<li><a href="#api:collection:add">add</a></li>
+				<li><a href="#api:collection:remove">remove</a></li>
+				<li><a href="#api:collection:clear">clear</a></li>
+				<li><a href="#api:collection:reset">reset</a></li>
+				<li><a href="#api:collection:sortfn">sortfn</a></li>
+				<li><a href="#api:collection:parse">parse</a></li>
+				<li><a href="#api:collection:each">each</a></li>
+				<li><a href="#api:collection:find">find</a></li>
+				<li><a href="#api:collection:exists">exists</a></li>
+				<li><a href="#api:collection:find_by_id">find_by_id</a></li>
+				<li><a href="#api:collection:find_by_cid">find_by_cid</a></li>
+				<li><a href="#api:collection:index_of">index_of</a></li>
+				<li><a href="#api:collection:query">query</a></li>
+				<li><a href="#api:collection:first">first</a></li>
+				<li><a href="#api:collection:last">last</a></li>
+				<li><a href="#api:collection:url">url</a></li>
+				<li><a href="#api:collection:get_url">get_url</a></li>
+				<li><a href="#api:collection:fetch">fetch</a></li>
+			</ul>
+		</li>
 		<li><a href="#api:controller">Controller</a></li>
 		<li><a href="#api:router">Router</a></li>
 		<li><a href="#api:sync">sync</a></li>
@@ -172,25 +204,30 @@
 <pre class="runnable">var MyController = Composer.Controller.extend({});
 
 var con = new MyController();
+
 con.bind('alertme', function(name) {
 	alert('Hai, '+ name +', this is your alert');
 });
+
 con.trigger('alertme', 'Andrew')</pre>
 <p>
 	Example of event being used by the framework:
 </p>
-<pre class="runnable">var Note = Composer.Model.extend({});
+<pre class="runnable">var Note = Composer.Model.extend();
+	
 var mynote = new Note({ text: 'get a job' });
+
 mynote.bind('change', function(note) {
-alert('Your note changed: '+ note.get('text'));
+	alert('Your note changed: '+ note.get('text'));
 });
+
 mynote.set({ text: 'my goat hurts' });</pre>
 <p>
 	The framework triggers events when certain actions happen in your Models or Collections.
 </p>
 
 
-<h3 id="api:events:bind">Events.bind <small>object.bind(event_name, callback)</small></h3>
+<h3 id="api:events:bind">Events.bind <small>object.bind(String event_name, function callback)</small></h3>
 <p>
 	Binds an event to object. The event under "event_name" can be an arbitrary string, or an event used by
 	Composer.js internally. 
@@ -206,6 +243,7 @@ mynote.set({ text: 'my goat hurts' });</pre>
 		</p>
 
 		<pre>mymodel.bind('all', function() { alert('something happened!!!!!!!1'); });
+			
 mymodel.trigger('make_babies');		// <- this will trigger the "all" event</pre>
 
 	</li>
@@ -217,14 +255,16 @@ mymodel.trigger('make_babies');		// <- this will trigger the "all" event</pre>
 		</p>
 
 		<pre>var mymodel = new MyModel({name: 'larry', age: 54});
+			
 mymodel.bind('change:name', function(model, value) {
 	alert('The new name of the model is '+ value);
 });
+
 mymodel.set({ age: 43 });		// <- this will NOT trigger the above event
 mymodel.set({ name: 'suzy' });		// <- this will trigger the event, because the name changed</pre>
 	</li>
 </ul>
-<h3 id="api:events:unbind">Events.unbind <small>object.unbind(event_name, callback)</small></h3>
+<h3 id="api:events:unbind">Events.unbind <small>object.unbind(String event_name, function callback)</small></h3>
 <p>
 	Removes a previously-bound callback function from an object. If no callback is specified, all callbacks for the event will be removed.
 	If no event is specified, all event callbacks on the object will be removed.
@@ -236,7 +276,7 @@ mymodel.unbind("change");		// Removes all "change" callbacks
 
 mymodel.unbind();			// Removes all callbacks on the object</pre>
 
-<h3 id="api:events:trigger">Events.trigger <small>object.trigger(event_name, [arg1, [arg2, ...]])</small></h3>
+<h3 id="api:events:trigger">Events.trigger <small>object.trigger(String event_name, [arg1, [arg2, ...]])</small></h3>
 <p>
 	Trigger the given event of an object. If no callbacks are bound to this event, nothing will happen. If there
 	are callbacks bound, they will be called in the order they were bound to the object.
@@ -262,8 +302,8 @@ mycontroller.trigger('tag_clicked', 'fisting', 'larry');</pre>
 	information with a server.
 </p>
 <p>
-	The following is a contrived example, but it demonstrates defining a model with a custom method, setting an attribute, and firing an event
-	keyed to changes in that specific attribute. After running this code once, <code>sidebar</code> will be available in your browser's
+	The following is a contrived example, but it demonstrates defining a model with a custom method, setting a data attribute, and firing an event
+	keyed to changes in that specific data attribute. After running this code once, <code>sidebar</code> will be available in your browser's
 	console, so you can play around with it.
 </p>
 <pre class="runnable">var Nav = Composer.Model.extend({
@@ -283,7 +323,7 @@ nav.set({color: 'white'});
 
 nav.promptColor();</pre>
 
-<h3 id="api:model:extend">Model.extend <small>Composer.Model.extend([properties])</small></h3>
+<h3 id="api:model:extend">Model.extend <small>Composer.Model.extend([Object properties])</small></h3>
 <p>
 	To create a <em>Model</em> class of your own, you extend <em>Composer.Model</em> and provide instance <em>properties</em>.
 </p>
@@ -296,9 +336,9 @@ nav.promptColor();</pre>
 	is_sexually_transmitted: function() { ... }
 });</pre>
 
-<h3 id="api:model:constructor">Model.init (constructor) <small>new Model([attributes])</small></h3>
+<h3 id="api:model:constructor">Model.init / constructor <small>new Model([Object attributes])</small></h3>
 <p>
-	When creating an instance of a model, you can pass in the initial values of the attributes, which will be
+	When creating an instance of a model, you can pass in the initial values of the data attributes, which will be
 	<code><a href="#api:model:set">set</a></code> on the model.	If you define an init function, it will be invoked when the model is created.
 </p>
 <pre class="runnable">var Disease = Composer.Model.extend({
@@ -311,9 +351,9 @@ var disease = new Disease({
 	name: "herpes"
 });</pre>
 
-<h3 id="api:model:set">Model.set <small>model.set(attributes, [options])</small></h3> 
+<h3 id="api:model:set">Model.set <small>model.set(Object attributes, [Object options])</small></h3> 
 <p>
-	Sets one or more attributes for the model, triggering change events for individual attributes that change,
+	Sets one or more data attributes for the model, triggering change events for individual data attributes that change,
 	and also a general change event if the model has changed. These events are only triggered if an attribute actually changes;
 	setting an attribute to the same value it currently is will not trigger events.
 </p>
@@ -328,17 +368,17 @@ var disease = new Disease({
 	any display changes needed.
 </p>
 
-<h3 id="api:model:unset">Model.unset <small>model.unset(attribute, [options])</small></h3> 
+<h3 id="api:model:unset">Model.unset <small>model.unset(String attribute, [Object options])</small></h3> 
 <p>
 	Unsets one data attribute from the model. Fires change events unless a <code>silent</code> option is passed.
 </p>
 
-<h3 id="api:model:get">Model.get <small>model.get(attribute)</small></h3>
-<p>Get the current value of an attribute from the model. For example: <code>disease.get('is_sexually_transmitted')</code></p>
+<h3 id="api:model:get">Model.get <small>model.get(String attribute)</small></h3>
+<p>Get the current value of a data attribute from the model. For example: <code>disease.get('is_sexually_transmitted')</code></p>
 
-<h3 id="api:model:escape">Model.escape <small>model.escape(attribute)</small></h3>
+<h3 id="api:model:escape">Model.escape <small>model.escape(String attribute)</small></h3>
 <p>
-	The same as <code><a href="#api:model:get">get</a></code>, except any HTML characters will be escaped when the attribute is a string.
+	The same as <code><a href="#api:model:get">get</a></code>, except any HTML characters will be escaped when the data attribute is a string.
 	This is	useful for preventing XSS-type attacks when loading data from your model into the DOM.
 </p>
 
@@ -350,15 +390,16 @@ var hacker = new Hacker({
 
 alert(hacker.escape('name'));</pre>
 
-<h3 id="api:model:has">Model.has <small>model.has(attribute)</small></h3>
-<p>Returns <code>true</code> if the attribute is set to a non-null or non-undefined value.</p>
+<h3 id="api:model:has">Model.has <small>model.has(String attribute)</small></h3>
+<p>Returns <code>true</code> if the data attribute is set to a non-null or non-undefined value.</p>
 
 <h3 id="api:model:clear">Model.clear <small>model.clear(option)</small></h3>
 <p>Clears all data out of the model. Fires change events unless a <code>silent</code> option is passed.</p>
 
-<h3 id="api:model:id">Model.id <small>model.id()</small></h3>
+<h3 id="api:model:id">Model.id <small>model.id([Boolean no_cid])</small></h3>
 <p>
-	Ids are special identifier values, either string or integer. Models can be retrieved by id from collections, and the id is used to
+	Ids are special identifier values, either string or integer, which normally correspond to a database id field value.
+	Models can be retrieved by id from collections, and the id is used to
 	generate model URLs by default. The <code>id</code> method is a convenient way of retrieving any id stored in the Model's data.
 </p>
 <pre class="runnable">var Employee = Composer.Model.extend();
@@ -372,6 +413,32 @@ alert(jeff.id());</pre>
 	By default, the id key is the string <code>"id"</code>, but you can override this with the <code>Model.id_key</code> property. This can be
 	useful, for example, if you're using MongoDB and your ids are stored in the <code>_id</code> property.
 </p>
+<pre>var Employee = Composer.Model.extend({
+	id_key: '_id'
+});
+
+var jeff = new Employee({
+	_id: 657932
+});</pre>
+
+<p>
+	Models that are newly created may not have an id yet. By default, calling the <code>id</code> method on a model with no id will
+	return the model's <code><a href="#api:model:cid">cid</a></code> instead. This behavior can be suppressed by passing <code>true</code>
+	into the <code>no_cid</code> parameter, in which case the method will return <code>false</code> when no id exists.
+</p>
+
+<h3 id="api:model:cid">Model.cid <small>model.cid()</small></h3>
+<p>
+	The <strong>cid</strong> (or client id) is a special property of models, a unique identifier automatically assigned to all models when
+	they're	first created. Client ids are handy when the model has not yet been saved to the server, and does not yet have its eventual true
+	<strong>id</strong>, but needs to be visible and manipulated in the UI. Client ids take the form: <code>c1, c2, c3, ...</code>
+</p>
+<pre class="runnable">var Employee = Composer.Model.extend();
+
+var jeff = new Employee();
+
+alert(jeff.id());	// they are
+alert(jeff.cid());	// the same</pre>
 
 <h3 id="api:model:data">Model.data <small>model.data</small></h3>
 <p>
@@ -382,7 +449,8 @@ alert(jeff.id());</pre>
 <h3 id="api:model:toJSON">Model.toJSON <small>model.toJSON()</small></h3>
 <p>
 	Returns a copy (not reference) of the model's data attributes. This can be useful for handing off data to views, adding any data as
-	necessary without affecting the actual model. Note, this doesn't actually return JSON.
+	necessary without affecting the actual model. Note, this doesn't actually return JSON; the name of this method is a bit confusing,
+	because it conforms to JavaScript's JSON API.
 </p>
 
 <pre class="runnable">var Employee = Composer.Model.extend();
@@ -392,13 +460,13 @@ var peon = new Employee({
 	first_name:	'Jeff'
 });
 
-alert(peon.toJSON());			// Not really JSON!
-alert(peon.toJSON().first_name);	// See?
+alert(peon.toJSON());
+alert(peon.toJSON().first_name);
 </pre>
 
 <h3 id="api:model:defaults">Model.defaults <small>model.defaults</small></h3>
 <p>
-	The defaults object can be used to specify the default attributes for your model. When creating an instance of the model, any unspecified
+	The defaults object can be used to specify the default data attributes for your model. When creating an instance of the model, any unspecified
 	attributes will be set to their default value.
 </p>
 
@@ -412,21 +480,22 @@ alert(peon.toJSON().first_name);	// See?
 
 alert("Dessert will be " + (new Meal()).get('dessert'));</pre>
 
-<h3 id="api:model:fetch">Model.fetch <small>model.fetch([options])</small></h3>
+<h3 id="api:model:fetch">Model.fetch <small>model.fetch([Object options])</small></h3>
 <p>
 	Populates the model's state from the server. Useful if the model has never been populated with data, or if you'd like to ensure that you
-	have the latest server state. A "change" event will be triggered if the server's state differs from the current attributes. Accepts
-	<code>success</code> and <code>error</code> callbacks in the options hash, which are passed <code>(model, response)</code> as arguments.
+	have the latest server state. A "change" event will be triggered if the server's state differs from the current data attributes. Accepts
+	<code>success</code> and <code>error</code> callbacks in the options object, which are passed <code>(model, response)</code> as
+	arguments.
 </p>
 
 <pre>// Get the person model state from server
 person.fetch();</pre>
 
-<h3 id="api:model:save">Model.save <small>model.save([attributes], [options])</small></h3>
+<h3 id="api:model:save">Model.save <small>model.save([Object attributes], [Object options])</small></h3>
 <p>
 	Save a model to your database (or alternative persistence layer), by delegating to <code><a href="#api.sync">Composer.sync</a></code>.
 	The <strong>attributes</strong> object
-	(as in <code><a href="#api:model:set">set</a></code>) should contain the attributes you'd like to change in the process.
+	(as in <code><a href="#api:model:set">set</a></code>) should contain any data attributes you'd like to change in the process.
 	If the model has a validate method, and validation fails, the model will not be saved. If
 	the model <code><a href="#api:model:is_new">is_new()</a></code>, the save will be a <code>"create"</code> (HTTP <code>POST</code>), if the
 	model already exists on	the server, the save will be an	<code>"update"</code> (HTTP <code>PUT</code>).
@@ -470,10 +539,10 @@ my_book.save({author: "Jeff"});		// sync does an "update"</pre>
   ...
 }});</pre>
 
-<h3 id="api:model:validate">Model.validate <small>model.validate(attributes)</small></h3>
+<h3 id="api:model:validate">Model.validate <small>model.validate(Object attributes)</small></h3>
 <p>
 	This method is left undefined, and you're encouraged to override it with your custom validation logic, if you have any that can be
-	performed in JavaScript. <strong>validate</strong> is called before <code>set</code> and <code>save</code>, and is passed the attributes
+	performed in JavaScript. <strong>validate</strong> is called before <code>set</code> and <code>save</code>, and is passed the data attributes
 	that are about to be updated. If the model and attributes are valid, don't return anything from <strong>validate</strong>; if the
 	attributes are invalid, return an <code>error</code> of your choosing. It can be as simple as a string error message to be displayed,
 	or a complete error object that describes the error programmatically. <code>set</code> and <code>save</code> will not continue if
@@ -513,17 +582,19 @@ one.set({
 <h3 id="api:model:get_url">Model.get_url <small>model.get_url()</small></h3>
 <p>
 	Returns the relative URL where the model's resource would be located on the server. Generates URLs of the form: <code>"/[collection url]/[id]",</code>
-	falling back to	<code>"/[<a href="#api:model:base_url">base_url</a>]/[id]"</code> if the model is not part of a collection.
+	falling back to	<code>"/[<a href="#api:model:base_url">base_url</a>]/[id]"</code> if the model is not part of a collection. In the case that a
+	<code>base_url</code> is specified <em>and</em> the model lives inside a collection, the <code>base_url</code> will take priority and the collection's
+	URL scheme will not be used.
 </p>
 <p>
-	Delegates to the <code><a href="#api:collection:get_url">Collection.get_url</a></code> method of the highest priority collection that the model
+	<code>get_url</code> delegates to the <code><a href="#api:collection:get_url">Collection.get_url</a></code> method of the highest priority collection that the model
 	belongs to in order to generate the URL. Make sure that you have a
 	<code>Collection.url</code> defined, or a <a href="#api:model:base_url">Model.base_url</a> property, if all models of this class share a common root
 	URL. A model with an id of 101, stored in a <code><a href="#api:collection">Composer.Collection</a></code> with a <code>url</code> of
 	<code>"/documents/7/notes"</code>, would have this URL: <code>"/documents/7/notes/101"</code>
 </p>
 <pre class="runnable">// Demonstrates getting a model's url based on the collection's URL
-var Bunny = Composer.Model.extend({});
+var Bunny = Composer.Model.extend();
 
 var BunniesCollection = Composer.Collection.extend({
 	model: Bunny,
@@ -537,13 +608,6 @@ var chuckles = new Bunny({
 var collection = new BunniesCollection([chuckles]);
 
 alert(chuckles.get_url());</pre>
-
-<p>You can override the default behavior and explicitly specify a model's URL by setting the <code>Model.url</code> property:</p>
-<pre class="runnable">var Bunny = Composer.Model.extend({
-	url:	'/bunny_bunny_bunny'
-});
-
-alert((new Bunny).get_url());</pre>
 
 <h3 id="api:model:base_url">Model.base_url <small>model.base_url</small></h3>
 <p>
@@ -559,25 +623,388 @@ var chuckles = new Bunny({
 });
 alert(chuckles.get_url());</pre>
 
+<h3 id="api:model:url">Model.url <small>model.url</small></h3>
+<p>You can override the default <code><a href="#api:model:get_url">get_url</a></code> behavior and explicitly specify a model's URL by setting the <code>Model.url</code> property:</p>
+<pre class="runnable">var Bunny = Composer.Model.extend({
+	id:		9001,
+	url:	'/bunny_bunny_bunny'
+});
+
+alert((new Bunny).get_url());</pre>
+
 <h3 id="api:model:collections">Model.collections <small>model.collections</small></h3>
 <p>
-	Contains references to the collection(s) the model is in. The collection with the highest <code>priority</code> property value is used when deriving
-	the model's URL via the <code><a href="#api:model:get_url">Model.get_url</a></code> method (which delegates to 
+	Array containing references to the collection(s) the model is in. The collection with the highest <code>priority</code> property value is used when
+	deriving the model's URL via the <code><a href="#api:model:get_url">Model.get_url</a></code> method (which delegates to 
 	<code><a href="#api:collection:get_url">Collection.get_url</a></code>).
 </p>
+<pre class="runnable">// Demonstration of Collection priority
+var Bunny = Composer.Model.extend();
 
-<h3 id="api:model:highest_priority_collection">Model.highest_priority_collection <small>model.highest_priority_collection()</small></h3>
-<p>
-	Returns a reference to the collection
-</p>
-<pre class="runnable">var Bunny = Composer.Model.extend();
-	
-var chuckles = new Bunny({id:3});
+var BunniesCollection = Composer.Collection.extend({
+	model: Bunny,
+	url: '/bunnies',
+	priority: 1
+});
+
+var MammalsCollection = Composer.Collection.extend({
+	model: Bunny,
+	url: '/mammals',
+	priority: 2
+});
+
+var chuckles = new Bunny({
+	id: 1
+});
+
+var collection1 = new BunniesCollection([chuckles]);
+var collection2 = new MammalsCollection([chuckles]);
 
 alert(chuckles.get_url());
 </pre>
 
+<h3 id="api:model:highest_priority_collection">Model.highest_priority_collection <small>model.highest_priority_collection()</small></h3>
+<p>
+	Returns a reference to the member of the <code><a href="#api:model:collections">collections</a></code> array with the highest <code>priority</code>
+	property value, or <code>false</code> if the array is empty.
+</p>
+
+<h3 id="api:model:parse">Model.parse <small>model.parse(Object response)</small></h3>
+<p>
+	<strong>parse</strong> is called whenever a model's data is returned by the server, in <code><a href="#api:model:fetch">fetch</a></code>, and
+	<code><a href="#api:model:save">save</a></code>. The function is passed the raw <code>response</code> object, and should return the data attributes
+	object to be set on the model. The default implementation is a no-op, simply passing through the JSON response. Override this if you need to perform
+	any data transformations before setting data into the model.
+</p>
+
+<h3 id="api:model:clone">Model.clone <small>model.clone()</small></h3>
+<p>Returns a new instance of the model with identical data attributes.</p>
+
+<h3 id="api:model:is_new">Model.is_new <small>model.is_new()</small></h3>
+<p>Has this model been saved to the server yet? If the model does not yet have an id, it is considered to be new.</p>
+
 <h2 id="api:collection">Collection</h2>
+<p>
+	Collections are ordered lists of models and contain various helper functions for finding and selecting subsets of model data.
+	They are basically a wrapper around an array; their function is dealing with large amounts of model data. For example, a blog post might have
+	a collection of comments&mdash;each individual comment could be a model within the comments collection.
+</p>
+<p>
+	Collections can be bound to <code>"change"</code> events, which trigger when any model in the collection has been modified. They can listen
+	for <code>"add"</code> and <code>"remove"</code> events, and can <code>fetch</code> their contents from the server (via
+	<code><a href="#api:fetch">Composer.sync</a></code>).
+</p>
+
+<h3 id="api:collection:extend">Collection.extend <small>Composer.Collection.extend([Object properties])</small></h3>
+<p>
+	To create a Collection class of your own, extend Composer.Collection, providing instance properties.
+</p>
+
+<h3 id="api:collection:model">Collection.model <small>collection.model</small></h3>
+<p>
+	Override this property to specify the model class that the collection contains. If defined, you can pass raw data attributes objects
+	to the constructor, <code><a href="#api:collection:add">add</a></code>, and
+	<code><a href="#api:collection:reset">reset</a></code>, and the attributes will be converted into a model of the proper type.
+</p>
+<pre>var Library = Composer.Collection.extend({
+	model: Book
+});</pre>
+
+<h3 id="api:collection:constructor">Collection.init / constructor <small>new Collection([Array models], [Object properties], [Object options])</small></h3>
+<p>
+	When creating a Collection, you may choose to pass in the initial array of models via the <code>models</code> parameter. Collection
+	properties can be set via the <code>properties</code> object, overriding any defaults. This is useful for specifying a
+	<code><a href="#api:collection:sortfn">sortfn</a></code> for sorting. If you define an <code>init</code> function, it will be invoked when
+	the	collection is created. The <code>options</code> parameter is passed internally to the <code><a href="#api:collection:reset">reset</a></code>
+	method on initialization and before any <code>init</code> function is called.
+</p>
+<pre class="runnable">var Book = Composer.Model.extend();
+	
+var Library = Composer.Collection.extend({
+	model: Book,
+	url: '/Library',
+	init: function() {
+		alert("I'm a library with " + this.models().length + " books!");
+	},
+	public: true		// overridden by our example library
+});
+
+var book1 = new Book();
+var book2 = new Book();
+var book3 = new Book();
+
+var lib = new Library( [ book1, book2, book3 ], { public: false } );
+
+alert('is public? ' + lib.public);
+</pre>
+
+<h3 id="api:collection:models">Collection.models <small>collection.models()</small></h3> 
+<p>
+	Wrapper function to get the models under the collection for direct selection.
+</p>
+
+<h3 id="api:collection:toJSON">Collection.toJSON <small>collection.toJSON()</small></h3>
+<p>
+	Return an array containing the data object of each model in the collection. This can be used to serialize and persist the collection as a whole.
+	The name of this method is a bit confusing, because it conforms to JavaScript's JSON API.
+</p>
+<pre class="runnable">var Students = Composer.Collection.extend();
+
+var classroom = new Students([
+	{name: "Timmy", age: 5},
+	{name: "Billy", age: 6},
+	{name: "Wendy", age: 9001}
+]);
+
+alert(JSON.stringify(classroom));</pre>
+
+<h3 id="api:collection:add">Collection.add <small>collection.add(Mixed models, [Object options])</small></h3>
+Add one or more models to the collection. The value of the <code>models</code> parameter can be an object or an array of objects.
+If any of these objects is a model, it is added directly to the collection. You
+may also pass objects containing raw data attributes and they will be instantiated as models of the type specified in
+<code><a href="#api:collection:model">Collection.model</a></code>. Fires <code>"add"</code> events, which you can suppress by passing
+<code>{silent: true}</code> in the <code>options</code> parameter. Pass <code>{at: index}</code> in the <code>options</code> parameter
+to splice the model into the collection at the specified <code>index</code>.
+<pre class="runnable">var Diseases = Composer.Collection.extend();
+
+var your_diseases = new Diseases();
+
+your_diseases.bind("add", function(disease) {
+	alert("you have " + disease.get("name") + " lol");
+});
+
+// add a single object
+your_diseases.add(
+	{name: "herpes"}
+);
+
+// add an array of objects
+your_diseases.add([
+	{name: "syphilis"},
+	{name: "rectal warts"}
+]);
+</pre>
+
+<h3 id="api:collection:remove">Collection.remove <small>collection.remove(Mixed models, [Object options])</small></h3>
+<p>
+	Removes one or more models from the collection. The value of the <code>models</code> parameter can be a model object or an array of model objects.
+	Fires <code>"remove"</code> events, which you can suppress by passing <code>{silent: true}</code>
+	in the <code>options</code> parameter.
+</p>
+<pre class="runnable">var Disease		= Composer.Model.extend();
+var DiseasesColl	= Composer.Collection.extend();
+var your_diseases	= new DiseasesColl();
+var herpes 		= new Disease({name: "herpes"});
+var rectal_warts 	= new Disease({name: "rectal warts"});
+var aids 		= new Disease({name: "AIDS"});
+
+your_diseases.add([herpes, rectal_warts, aids]);
+
+your_diseases.bind("remove", function(disease) {
+	alert("congrats! you have been cured of " + disease.get("name") + " lol");
+});
+
+your_diseases.remove(aids);</pre>
+
+<h3 id="api:collection:clear">Collection.clear <small>collection.clear([Object options])</small></h3>
+<p>
+	Removes all models from the collection, triggering a <code>"clear"</code> event unless <code>{silent: true}</code> is passed into <code>options</code>.
+</p>
+
+<h3 id="api:collection:reset">Collection.reset <small>collection.reset([Array models], [Object options])</small></h3>
+<p>
+	Resets a collection with all new model data and triggers a <code>"reset"</code> event. Existing model data is
+	<code><a href="#api:collection:clear">clear</a></code>ed out (along with a
+	<code>"clear"</code> event) unless an <code>{append: true}</code> option is passed, in which case the model data is appended to the end of the
+	collection's list of models. Passing a <code>{silent: true}</code> option will silence all events that would be triggered by this method.
+</p>
+<pre class="runnable">var Dogs = Composer.Collection.extend();
+
+var my_dogs = new Dogs([
+	{type:	"Pomeranian"},
+	{type:	"Malamute"},
+	{type:	"Chihuahua"},
+]);
+
+my_dogs.bind("reset", function() {
+	alert("I have " + this.models().length + " dogs!");
+});
+
+my_dogs.reset([
+	{type: "Husky"}
+]);</pre>
+
+<h3 id="api:collection:sortfn">Collection.sortfn <small>collection.sortfn</small></h3>
+<p>
+	Each collection can optionally have a <code>sortfn</code> function defined; this is used automatically when adding models to the collection to
+	sort and keep the collection's <code><a href="#api:collection:models">models</a></code> array in a specified order.
+</p>
+<pre class="runnable">var Dogs = Composer.Collection.extend({
+	sortfn: function(a, b) {
+		return a.get('weight') - b.get('weight');
+	}
+});
+var my_dogs = new Dogs([
+	{ name: "Toby",		weight: 60 },
+	{ name: "Ruby",		weight: 12 },
+	{ name: "Wookie",	weight: 20 },
+	{ name: "Timmy",	weight: 6 }
+]);
+
+// Return dogs ordered by weight
+alert(my_dogs.models()[0].get('name'));
+alert(my_dogs.models()[1].get('name'));
+alert(my_dogs.models()[2].get('name'));
+alert(my_dogs.models()[3].get('name'));</pre>
+
+<h3 id="api:collection:parse">Collection.parse <small>collection.parse(Object response)</small></h3>
+<p>
+	<strong>parse</strong> is called whenever a collection's model data is returned by the server, in
+	<code><a href="#api:collection:fetch">fetch</a></code>.	The function is passed the raw <code>response</code> object. The default implementation
+	is a no-op, simply passing through the JSON response. Override this if you need to perform any data transformations before setting model data
+	into the collection.
+</p>
+
+<h3 id="api:collection:each">Collection.each <small>collection.each(function fn, [Object bind])</small></h3>
+<p>
+	A convenience function for looping over each of a collection's models, optionally binding the function's scope to an object.
+</p>
+<pre class="runnable">var Dogs = Composer.Collection.extend();
+
+var my_dogs = new Dogs([
+	{ name: "Toby",		weight: 60 },
+	{ name: "Ruby",		weight: 12 },
+	{ name: "Wookie",	weight: 20 }
+]);
+my_dogs.each(function(model) {
+	alert(model.get('name') + ' weighs ' + model.get('weight') + ' pounds.');
+});</pre>
+
+<h3 id="api:collection:find">Collection.find <small>collection.find(function callback, [function sortfn])</small></h3>
+<p>
+	Returns the first model in the collection that satisfies the <code>callback</code> function, optionally ordering the search by the sorting
+	function defined in <code>sortfn</code>.
+</p>
+<pre class="runnable">var Dogs = Composer.Collection.extend();
+
+var my_dogs = new Dogs([
+	{ name: "Toby",		weight: 60 },
+	{ name: "Lucy",		weight: 30 },
+	{ name: "Seal",		weight: 30 }
+]);
+
+// Find the first dog in the collection that weighs 30 pounds
+var dog = my_dogs.find(function(model) {
+	if (model.get('weight') == 30) return true;
+});
+
+alert(dog.get('name'));</pre>
+
+<h3 id="api:collection:exists">Collection.exists <small>collection.exists(function callback)</small></h3>
+<p>Given a <code>callback</code> function, returns whether or not at least one of the models within the collection satisfies that function.</p>
+<pre>var Laptops = Composer.Collection.extend();
+	
+var my_laptops = new Laptops([
+	{
+		name: 'Alienware M17x R3',
+		lightweight: false,
+		powerful: true
+	},
+	{
+		name: 'Lenovo W520',
+		lightweight: false,
+		powerful: true
+	},
+	{
+		name: '11" Macbook Air',
+		lightweight: true,
+		powerful: false
+	},
+]);
+
+var perfect_laptop_exists = my_laptops.exists(function(model) {
+	if (model.get('lightweight') && model.get('powerful')) return true;
+});
+
+alert(perfect_laptop_exists);	// false
+</pre>
+
+<h3 id="api:collection:find_by_id">Collection.find_by_id <small>collection.find_by_id(Mixed id)</small></h3>
+<p>Convenience function to find a model by <code><a href="#api:model:id">id</a></code>.</p>
+
+<h3 id="api:collection:find_by_cid">Collection.find_by_cid <small>collection.find_by_id(Mixed cid)</small></h3>
+<p>Convenience function to find a model by <code><a href="#api:model:cid">cid</a></code>.</p>
+
+<h3 id="api:collection:index_of">Collection.index_of <small>collection.index_of(Mixed model_or_id)</small></h3>
+<p>
+	Accepts either a model or an id and returns the index of that item in the list of models.
+</p>
+<pre class="runnable">var CubicleFarm	= Composer.Collection.extend();
+var Employee	= Composer.Model.extend();
+var employee1	= new Employee({ id: 657932, name: "Perry the Peon" });
+var employee2	= new Employee({ id: 326489, name: "Suzy the Serf" });
+var employee3	= new Employee({ id: 243641, name: "Ernie the Indentured Servant" })
+	
+var office	= new CubicleFarm([employee1, employee2, employee3]);
+
+alert(office.index_of( 243641 ));
+alert(office.index_of( employee1 ));</pre>
+
+<h3 id="api:collection:query">Collection.query <small>collection.query(Mixed selector)</small></h3>
+<p>
+	Queries the models in the collection with the criteria specified in <code>selector</code> and returns <em>all</em> that match.
+	<code>selector</code> can be either a callback function or a key-value object for matching.
+</p>
+<p>For example:</p>
+<pre>mycol.select(function(data) {
+	if(data.get('name') == 'andrew' && data.get('age') == 24) {
+		return true
+	}
+});</pre>
+<p>is the same as:</p>
+<pre>mycol.select({
+	name: andrew,
+	age: 24
+});</pre>
+<p>In other words, it's a very simple version of MongoDB's selection syntax, but with a lot less functionality.</p>
+
+<h3 id="api:collection:first">Collection.first <small>collection.first([Integer n])</small></h3>
+<p>
+	Returns the first model from the collection, or the first <code>n</code> items, if specified.
+</p>
+
+<h3 id="api:collection:last">Collection.last <small>collection.last([Integer n])</small></h3>
+<p>
+	Returns the last model from the collection, or the last <code>n</code> items, if specified.
+</p>
+
+<h3 id="api:collection:url">Collection.url <small>collection.url</small></h3>
+<p>
+	The relative URL which describes the collection's location on the server. This value can (and should) be retrieved via the
+	<code><a href="#api:collection:get_url">Collection.get_url</a></code> method.
+</p>
+<pre>var Library = Composer.Collection.extend({
+	url: '/Library'
+});</pre>
+
+<h3 id="api:collection:get_url">Collection.get_url <small>collection.get_url()</small></h3>
+<p>
+	A simple wrapper function to get the collection's <code><a href="#api:collection:url">url</a></code>. Models within the
+	collection will ordinarily call <code>Collection.get_url</code> within
+	<code><a href="#api:model:get_url">Model.get_url</a></code>	in order to derive their location on the server.
+</p>
+
+<h3 id="api:collection:fetch">Collection.fetch <small>collection.fetch([Object options])</small></h3>
+<p>
+	Populates the collection's state from the server. Useful if the collection has never been populated with data, or if you'd like to
+	ensure that you have the latest server state. A "change" event will be triggered if the server's state differs from the current model
+	state. Accepts <code>success</code> and <code>error</code> callbacks in the options object, which are passed <code>(model, response)</code>
+	as arguments.
+</p>
+
+<pre>// Get the people collection state from server
+people.fetch();</pre>
+
 <h2 id="api:controller">Controller</h2>
 <h2 id="api:router">Router</h2>
 <h2 id="api:sync">sync</h2>
