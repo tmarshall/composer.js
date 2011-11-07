@@ -525,11 +525,11 @@
 		 * loops over the collections this model belongs to and gets the highest 
 		 * priority one. makes for easier url extraction during syncing.
 		 */
-		get_highest_priority_collection: function()
+		highest_priority_collection: function()
 		{
 			var collections	=	shallow_array_clone(this.collections);
 			collections.sort( function(a, b) { return b.priority - a.priority; } );
-			return collections.count ? collections[0] : false;
+			return collections.length ? collections[0] : false;
 		},
 
 		/**
