@@ -62,6 +62,7 @@
 				<li><a href="#api:collection:model">model</a></li>
 				<li><a href="#api:collection:constructor">init / constructor</a></li>
 				<li><a href="#api:collection:models">models</a></li>
+				<li><a href="#api:collection:priority">priority</a></li>
 				<li><a href="#api:collection:toJSON">toJSON</a></li>
 				<li><a href="#api:collection:add">add</a></li>
 				<li><a href="#api:collection:remove">remove</a></li>
@@ -83,7 +84,24 @@
 				<li><a href="#api:collection:fetch">fetch</a></li>
 			</ul>
 		</li>
-		<li><a href="#api:controller">Controller</a></li>
+		<li>
+			<a href="#api:controller">Controller</a>
+			<ul>
+				<li><a href="#api:controller:extend">extend</a></li>
+				<li><a href="#api:controller:constructor">init / constructor</a></li>
+				<li><a href="#api:controller:el">el</a></li>
+				<li><a href="#api:controller:inject">inject</a></li>
+				<li><a href="#api:controller:tag">tag</a></li>
+				<li><a href="#api:controller:elements">elements</a></li>
+				<li><a href="#api:controller:events">events</a></li>
+				<li><a href="#api:controller:render">render</a></li>
+				<li><a href="#api:controller:html">html</a></li>
+				<li><a href="#api:controller:release">release</a></li>
+				<li><a href="#api:controller:replace">replace</a></li>
+				<li><a href="#api:controller:delegate_events">delegate_events</a></li>
+				<li><a href="#api:controller:refresh_elements">refresh_elements</a></li>
+			</ul>
+		</li>
 		<li><a href="#api:router">Router</a></li>
 		<li><a href="#api:sync">sync</a></li>
 	</ul>
@@ -201,7 +219,7 @@
 	Example of event being used in your app:
 </p>
 
-<pre class="runnable">var MyController = Composer.Controller.extend({});
+<pre class="runnable">var MyController = Composer.Controller.extend();
 
 var con = new MyController();
 
@@ -319,7 +337,7 @@ nav.bind('change:color', function(model, color) {
 	$('nav').style.backgroundColor = color;
 });
 
-nav.set({color: 'white'});
+nav.set({color: '#fed'});
 
 nav.promptColor();</pre>
 
@@ -339,7 +357,7 @@ nav.promptColor();</pre>
 <h3 id="api:model:constructor">Model.init / constructor <small>new Model([Object attributes])</small></h3>
 <p>
 	When creating an instance of a model, you can pass in the initial values of the data attributes, which will be
-	<code><a href="#api:model:set">set</a></code> on the model.	If you define an init function, it will be invoked when the model is created.
+	<code><a href="#api:model:set">set</a></code> on the model.	If you define an <code>init</code> function, it will be invoked when the model is created.
 </p>
 <pre class="runnable">var Disease = Composer.Model.extend({
 	init: function() {
@@ -587,8 +605,8 @@ one.set({
 	URL scheme will not be used.
 </p>
 <p>
-	<code>get_url</code> delegates to the <code><a href="#api:collection:get_url">Collection.get_url</a></code> method of the highest priority collection that the model
-	belongs to in order to generate the URL. Make sure that you have a
+	<code>get_url</code> delegates to the <code><a href="#api:collection:get_url">Collection.get_url</a></code> method of the highest priority collection that
+	the model belongs to in order to generate the URL. Make sure that you have a
 	<code>Collection.url</code> defined, or a <a href="#api:model:base_url">Model.base_url</a> property, if all models of this class share a common root
 	URL. A model with an id of 101, stored in a <code><a href="#api:collection">Composer.Collection</a></code> with a <code>url</code> of
 	<code>"/documents/7/notes"</code>, would have this URL: <code>"/documents/7/notes/101"</code>
@@ -624,7 +642,10 @@ var chuckles = new Bunny({
 alert(chuckles.get_url());</pre>
 
 <h3 id="api:model:url">Model.url <small>model.url</small></h3>
-<p>You can override the default <code><a href="#api:model:get_url">get_url</a></code> behavior and explicitly specify a model's URL by setting the <code>Model.url</code> property:</p>
+<p>
+	You can override the default <code><a href="#api:model:get_url">get_url</a></code> behavior and explicitly specify a model's URL by setting
+	the <code>Model.url</code> property:
+</p>
 <pre class="runnable">var Bunny = Composer.Model.extend({
 	id:		9001,
 	url:	'/bunny_bunny_bunny'
@@ -697,7 +718,7 @@ alert(chuckles.get_url());
 
 <h3 id="api:collection:extend">Collection.extend <small>Composer.Collection.extend([Object properties])</small></h3>
 <p>
-	To create a Collection class of your own, extend Composer.Collection, providing instance properties.
+	To create a Collection class of your own, <code>extend</code> Composer.Collection, providing instance properties.
 </p>
 
 <h3 id="api:collection:model">Collection.model <small>collection.model</small></h3>
@@ -742,6 +763,14 @@ alert('is public? ' + lib.public);
 <p>
 	Wrapper function to get the models under the collection for direct selection.
 </p>
+
+<h3 id="api:collection:priority">Collection.priority <small>collection.priority</small></h3> 
+<p>
+	In Composer, any particular instance of a model can be added to more than one collection. Typically, when a model saves, it needs to invoke
+	<code><a href="#api:collection:get_url">Collection.get_url</a></code> in order to derive its url. If the model belongs to more than one
+	collection, the collection with the highest <code>priority</code> value is used in determining the url.
+</p>
+<p>Please see <code><a href="#api:model:collections">Model.collections</a></code> for an example of <code>priority</code> in action.</p>
 
 <h3 id="api:collection:toJSON">Collection.toJSON <small>collection.toJSON()</small></h3>
 <p>
@@ -998,15 +1027,237 @@ alert(office.index_of( employee1 ));</pre>
 <p>
 	Populates the collection's state from the server. Useful if the collection has never been populated with data, or if you'd like to
 	ensure that you have the latest server state. A "change" event will be triggered if the server's state differs from the current model
-	state. Accepts <code>success</code> and <code>error</code> callbacks in the options object, which are passed <code>(model, response)</code>
-	as arguments.
+	state. Accepts <code>success</code> and <code>error</code> callbacks in the options object, which are passed
+	<code>(model, response)</code> as arguments.
 </p>
 
 <pre>// Get the people collection state from server
 people.fetch();</pre>
 
 <h2 id="api:controller">Controller</h2>
+<p>	
+	<strong>Controller</strong> classes sit between views and your models/collections and are very simple, being more of a set of
+	conventions	than actual code. Controllers are the glue inside your application, tying the various components together. Generally,
+	controllers deal with adding and responding to DOM events, rendering templates and keeping views and models in sync.
+</p>
+<p>
+	The following example is a good demonstration of a controller in action. It utilizes the following concepts:
+	<ul>
+		<li>a controller is defined with <code><a href="#api:controller:extend">extend</a></code> and given an <code><a href="#api:controller:contructor">init</a></code> function</li>
+		<li><code><a href="#api:controller:el">el</a></code> defines a CSS selector to grab for its view</li>
+		<li><code><a href="#api:controller:elements">elements</a></code> specifies a list of elements within the view to assign as properties</li>
+		<li>a <code><a href="#api:controller:className">className</a></code> to apply on initialization is defined</li>
+		<li><code><a href="#api:controller:events">events</a></code> and associated callback functions are linked to HTML elements</li>
+		<li>a function is bound to the <code>"click"</code> event</li>
+	</ul>
+</p>
+<pre class="runnable">var DemoController = Composer.Controller.extend({
+	el: "#controller_demo_1",
+	
+	elements: {
+		'ul': 'my_list',
+		'p.text': 'my_text',
+		'button': 'my_button'
+	},
+
+	className: 'active',
+	
+	events: { 'click button': 'button_press' },
+	
+	init: function() {
+		this.my_text.destroy();
+		this.my_button.disabled = false;
+	},
+	
+	button_press: function(e) {
+		this.my_list.set('html', 'You clicked the button!');
+	}
+});
+
+var my_demo = new DemoController();
+
+// Run Code and check out the controller_demo_1 div below</pre>
+<div id="controller_demo_1" class="example">
+	<h4>controller_demo_1</h4>
+	<p class="text">Please click the "Run Code" button above to activate this example.</p>
+	<ul>
+		<li>list item 1</li>
+		<li>list item 2</li>
+		<li>list item 3</li>
+	</ul>
+	<button disabled>button</button>
+</div>
+
+<h3 id="api:controller:extend">Controller.extend <small>Composer.Controller.extend([Object properties])</small></h3>
+
+<p>To create a Controller class of your own, <code>extend</code> Composer.Controller, providing instance properties.</p>
+<pre>var TestController = Composer.Controller.extend({
+	...
+});</pre>
+
+<h3 id="api:model:constructor">Controller.init / constructor <small>new Controller([Object properties])</small></h3>
+<p>
+	When creating an instance of a controller, you can pass in intial <code>properties</code>. It's a good practice, although not required, to
+	pass your model data into a property called <code>model</code>. If you define an <code>init</code> function, it will be
+	invoked when the controller is created, after any <code><a href="#api:controller:elements">elements</a></code> and
+	<code><a href="#api:controller:events">events</a></code> assignment.
+</p>
+<pre class="runnable">var TestController = Composer.Controller.extend({
+	init: function() {
+		alert('My name is ' + this.model.get('name'));
+	}
+});
+
+var my_model = new (Composer.Model.extend())( {name: 'Billy!'} );
+
+var my_controller = new TestController( {model: my_model} );</pre>
+
+<h3 id="api:controller:el">Controller.el <small>controller.el</small></h3>
+<p>
+	A controller's <code>el</code> is the DOM object that is bound to it, a container for any
+	<code><a href="#api:controller:render">render</a></code>ed HTML elements associated with the controller's view(s).
+</p>
+<p>
+	Often, it is necessary to define a controller before its container element exists in the DOM. For convenience, <code>el</code>
+	can be set to a string CSS selector in the controller's definition. Then, upon initialization, if the selector "hits" an
+	element in the DOM, the element is then tied to the controller.
+</p>
+<pre class="runnable">var DemoController = Composer.Controller.extend({
+	el: "#nav"
+});
+
+var my_demo = new DemoController();
+
+my_demo.el.style.backgroundColor = prompt('Enter a CSS color');</pre>
+<p>
+	If no value is provided for <code>el</code>, or if the specified CSS selector string matches no elements upon controller
+	initialization,	a DOM element of the type specified in <code><a href="#api:controller:tag">tag</a></code> is created and assigned
+	for	<code>el</code>.
+</p>
+
+<h3 id="api:controller:inject">Controller.inject <small>controller.inject</small></h3>
+<p>
+	If <code>inject</code> is set to a string CSS selector, then, within the controller initialization process,
+	the HTML element <code><a href="#api:controller:el">el</a></code> (having been already specified, selected via CSS selector, or
+	otherwise created of type <code><a href="#api:controller:tag">tag</a></code>) is injected into the DOM element matching the
+	<code>inject</code>	selector, replacing any existing children. This allows you to easily inject views into the DOM.
+</p>
+
+<h3 id="api:controller:tag">Controller.tag <small>controller.tag</small></h3>
+<p>
+	If <code><a href="#api:controller:el">el</a></code> is empty on controller initialization, a new HTML element is created of
+	the type specified in <code>tag</code>. By default, this is a <code>div</code> element.
+</p>
+
+<h3 id="api:controller:elements">Controller.elements <small>controller.elements</small></h3>
+<p>
+	The <code>elements</code> object is a convenient way to grab DOM elements out of a controller's
+	<code><a href="#api:controller:el">el</a></code> object and
+	assign them to the controller as properties. <code>elements</code> is specified in the following format:
+</p>
+<pre>elements: {
+	'.selector1':			'property1',
+	'tag othertag.selector2':	'property2' 
+}</pre>
+<p>
+	The property names in the <code>elements</code> object are CSS selectors (to be selected from <code><a href="#api:controller:el">el</a></code>).
+	The corresponding DOM elements are assigned to controller properties with the names specified by the values of the <code>elements</code>
+	properties. This selection and assignment process happens internally during controller initialization, and whenever the
+	<code><a href="#api:controller:html">html</a></code> or <code><a href="#api:controller:replace">replace</a></code> methods are invoked. You
+	can also call <code><a href="#api:controller:refresh_elements">refresh_elements</a></code> directly to refresh the element assignments.
+</p>
+
+<h3 id="api:controller:events">Controller.events <small>controller.events</small></h3>
+<p>
+	The <code>events</code> object is used to link event callback functionality to HTML elements within the controller's
+	<code><a href="#api:controller:el">el</a></code> object. For example, you could link controller function callbacks to submit and
+	click actions in the view as follows:
+</p>
+<pre>events: {
+	'submit form':		'validate_form',
+	'change input.pass':	'check_password_strength' 
+}</pre>
+<p>
+	The property names in the <code>events</code> object are strings of the form <code>"[event] [selector]"</code> and the values define the associated
+	callback function.
+</p>
+<p>
+	Event callbacks are parsed out of the <code>events</code> object and assigned to the appropriate HTML elements internally during controller initialization,
+	and whenever the <code><a href="#api:controller:replace">replace</a></code> method is invoked. You can also call
+	<code><a href="#api:controller:delegate_events">delegate_events</a></code> to directly execute the event assignment logic.
+</p>
+
+<h3 id="api:controller:render">Controller.render <small>controller.render()</small></h3>
+<p>
+	On its own, <code>render</code> does nothing but return <code>this</code>. As a good practice, <code>render</code> should be overridden with
+	functionality that actually displays the view, and it should always return <code>this</code>. Typically, <code>render</code> will call
+	<code><a href="#api:controller:html">Controller.html</a></code> to set <code><a href="#api:controller:el">el</a></code>'s HTML content and
+	will modify any page styles as necessary. If you use a templating system, <code>render</code> is a good place to call out to it from.
+</p>
+<pre>render: function() {
+	list_item = '&lt;li>' + this.model.get('item_text') + '&lt;/li>';
+	
+	this.html(list_item);
+	
+	if(MyApp.other_controller.selected_item_id() == this.model.id()) {
+		this.el.addClass('selected');
+	}
+	return this;
+}</pre>
+
+<h3 id="api:controller:html">Controller.html <small>controller.html(String text)</small></h3>
+<p>
+	<code>html</code> replaces <code><a href="#api:controller:el">el</a></code>'s HTML content with the specified <code>text</code> and then
+	calls <code><a href="#api:controller:refresh_elements">refresh_elements</a></code>.
+</p>
+
+<pre class="runnable">var DemoController = Composer.Controller.extend({
+	el: "#controller_demo_2",
+	
+	className: 'active',
+	
+	init: function() {
+		this.html('i have sex with animals');
+	}
+});
+
+var my_demo = new DemoController();</pre>
+<div id="controller_demo_2" class="example">
+	<h4>controller_demo_2</h4>
+	<p class="text">Please click the "Run Code" button above to activate this example.</p>
+</div>
+
+<h3 id="api:controller:release">Controller.release <small>controller.release([Object options])</small></h3>
+<p>
+	Removes the controller's view (<code><a href="#api:controller:el">el</a></code>) from the DOM and triggers its release event
+	unless a <code>{silent: true}</code> is passed. <code>el</code> is destroyed unless a <code>{dispose: true}</code> option is passed,
+	in which case <code>el</code> is removed from the DOM but not necessarily from memory (if there are other references to <code>el</code>,
+	they would be maintained). In any case, <code>el</code> is set to false within the controller. 
+</p>
+<h3 id="api:controller:replace">Controller.replace <small>controller.replace(HTMLElement element)</small></h3>
+<p>
+	Replaces <code><a href="#api:controller:el">el</a></code> with another element and refreshes the controller's events and elements by
+	invoking <code><a href="#api:controller:delegate_events">delegate_events</a></code> and
+	<code><a href="#api:controller:refresh_elements">refresh_elements</a></code>.
+</p>
+
+<h3 id="api:controller:delegate_events">Controller.delegate_events <small>controller.delegate_events()</small></h3>
+<p>
+	Assigns event callback functions to the appropriate HTML elements as defined in the <code><a href="#api:controller:events">events</a></code> object.
+	This is normally handled on controller initialization and <code><a href="#api:controller:replace">replace</a></code>, but can be directly invoked,
+	such as in cases where the <code>events</code> object is modified after controller initialization.
+</p>
+
+<h3 id="api:controller:refresh_elements">Controller.refresh_elements <small>controller.refresh_elements()</small></h3>
+<p>
+	Sets the HTML elements defined in the <code><a href="#api:controller:elements">elements</a></code> object to the appropriate controller properties.
+	This is normally handled on controller initialization, <code><a href="#api:controller:html">html</a></code> and
+	<code><a href="#api:controller:replace">replace</a></code>, but can be directly invoked, such as in cases where the <code>events</code> object is
+	modified after controller initialization.
+</p>
+
 <h2 id="api:router">Router</h2>
+<p>Coming soon! Lol!</p>
 <h2 id="api:sync">sync</h2>
 
 </div>
@@ -1023,7 +1274,7 @@ people.fetch();</pre>
 			var runnables = $ES('.runnable');
 			runnables.each(function(el) {
 				var button = $(document.createElement('button'));
-				var code = el.innerHTML;
+				var code = el.innerHTML.replace('&lt;', '<');
 				button.innerHTML = 'Run Code';
 				button.addEvent('click', function(e) { eval(code) });
 				el.insertBefore(button);			
