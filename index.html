@@ -91,6 +91,7 @@
 				<li><a href="#api:controller:constructor">init / constructor</a></li>
 				<li><a href="#api:controller:el">el</a></li>
 				<li><a href="#api:controller:inject">inject</a></li>
+				<li><a href="#api:controller:attach">attach</a></li>
 				<li><a href="#api:controller:tag">tag</a></li>
 				<li><a href="#api:controller:elements">elements</a></li>
 				<li><a href="#api:controller:events">events</a></li>
@@ -113,8 +114,8 @@
 </div>
 
 <div id="content">
-
 <h1 id="overview">Composer.js</h1>
+<img src="composer.gif"/>
 <p>
 	Composer.js is a javascript MVC framework for <a href="http://mootools.net/">Mootools</a> that helps you grow 
 	and manage your front-end javascript application by splitting out separate pieces of functionality using the 
@@ -571,9 +572,9 @@ my_book.save({author: "Jeff"});		// sync does an "update"</pre>
 	or a complete error object that describes the error programmatically. <code>set</code> and <code>save</code> will not continue if
 	<strong>validate</strong> returns an error. Failed validations trigger an <code>"error"</code> event.
 </p>
-<pre>var Chapter = Composer.Model.extend({
+<pre class="runnable">var Chapter = Composer.Model.extend({
 	validate: function(attrs) {
-		if (attrs.end < attrs.start) {
+		if (attrs.end &lt; attrs.start) {
 			return "can't end before it starts";
 		}
 	}
@@ -936,7 +937,7 @@ alert(dog.get('name'));</pre>
 
 <h3 id="api:collection:exists">Collection.exists <small>collection.exists(function callback)</small></h3>
 <p>Given a <code>callback</code> function, returns whether or not at least one of the models within the collection satisfies that function.</p>
-<pre>var Laptops = Composer.Collection.extend();
+<pre class="runnable">var Laptops = Composer.Collection.extend();
 	
 var my_laptops = new Laptops([
 	{
@@ -957,7 +958,7 @@ var my_laptops = new Laptops([
 ]);
 
 var perfect_laptop_exists = my_laptops.exists(function(model) {
-	if (model.get('lightweight') && model.get('powerful')) return true;
+	if (model.get('lightweight') &amp;&amp; model.get('powerful')) return true;
 });
 
 alert(perfect_laptop_exists);	// false
@@ -981,8 +982,8 @@ var employee3	= new Employee({ id: 243641, name: "Ernie the Indentured Servant" 
 	
 var office	= new CubicleFarm([employee1, employee2, employee3]);
 
-alert(office.index_of( 243641 ));
-alert(office.index_of( employee1 ));</pre>
+alert(office.index_of( 243641 ));	// returns 2
+alert(office.index_of( employee1 ));	// returns 0</pre>
 
 <h3 id="api:collection:query">Collection.query <small>collection.query(Mixed selector)</small></h3>
 <p>
@@ -1048,7 +1049,10 @@ people.fetch();</pre>
 <p>
 	The following example is a good demonstration of a controller in action. It utilizes the following concepts:
 	<ul>
-		<li>a controller is defined with <code><a href="#api:controller:extend">extend</a></code> and given an <code><a href="#api:controller:contructor">init</a></code> function</li>
+		<li>
+			a controller is defined with <code><a href="#api:controller:extend">extend</a></code> and given an
+			<code><a href="#api:controller:contructor">init</a></code> function
+		</li>
 		<li><code><a href="#api:controller:el">el</a></code> defines a CSS selector to grab for its view</li>
 		<li><code><a href="#api:controller:elements">elements</a></code> specifies a list of elements within the view to assign as properties</li>
 		<li>a <code><a href="#api:controller:className">className</a></code> to apply on initialization is defined</li>
@@ -1148,6 +1152,64 @@ my_demo.el.style.backgroundColor = prompt('Enter a CSS color');</pre>
 	<code>inject</code>	selector, replacing any existing children. This allows you to easily inject views into the DOM.
 </p>
 
+<h3 id="api:controller:attach">Controller.attach <small>controller.attach()</small></h3>
+<p>
+	Injects a controller's HTML content (<code><a href="#api:controller:el">el</a></code>) into the element specified by the 
+	<code><a href="#api:controller:inject">inject</a></code> selector, replacing any existing content. <code>attach</code> is normally called
+	automatically on controller initialization, but can be called again if needed (such as when multiple controllers are using the same
+	container element and you need to switch from one view to another without re-initializing a controller).
+</p>
+<p>
+	The following example demonstrates using <code>attach</code> along with <code><a href="#api:controller:events">Controller.events</a></code> to toggle
+	the content of a page element between two controllers.
+</p>
+<pre class="runnable">var BoyController = Composer.Controller.extend({
+	inject: "#cd2_container_element",
+	init: function() {
+		this.html("Help I'm a boy!");
+	}
+});
+
+var GirlController = Composer.Controller.extend({
+	inject: "#cd2_container_element",
+	init: function() {
+		this.html("Help I'm a girl!");
+	}
+});
+
+var ButtonController = Composer.Controller.extend({
+	el: '#controller_demo_2',
+	events: {
+		'click button.boy': 'boy_click',
+		'click button.girl': 'girl_click'
+	},
+	className: 'active',				// applied on initialization
+	init: function() {
+		this.el.getElement('button.boy').disabled = false;
+		this.el.getElement('button.girl').disabled = false;
+		this.el.getElement('p').set('html', 'Click the buttons to switch your gender!');
+		this.boy_controller = new BoyController();
+		this.girl_controller = new GirlController();
+	},
+	boy_click: function() {
+		this.boy_controller.attach();		// switch to boy
+	},
+	girl_click: function() {
+		this.girl_controller.attach();		// switch to girl
+	}
+});
+
+var my_controller = new ButtonController();</pre>
+<div id="controller_demo_2" class="example">
+	<h4>controller_demo_2</h4>
+	<div id="cd2_container_element" class="example">
+		cd2_container_element
+	</div>
+	<p>Please click the "Run Code" button above to activate this example.</p>
+	<button class="boy" disabled="true">boy</button>
+	<button class="girl" disabled="true">girl</button>
+</div>
+
 <h3 id="api:controller:tag">Controller.tag <small>controller.tag</small></h3>
 <p>
 	If <code><a href="#api:controller:el">el</a></code> is empty on controller initialization, a new HTML element is created of
@@ -1217,7 +1279,7 @@ my_demo.el.style.backgroundColor = prompt('Enter a CSS color');</pre>
 </p>
 
 <pre class="runnable">var DemoController = Composer.Controller.extend({
-	el: "#controller_demo_2",
+	el: "#controller_demo_3",
 	
 	className: 'active',
 	
@@ -1227,8 +1289,8 @@ my_demo.el.style.backgroundColor = prompt('Enter a CSS color');</pre>
 });
 
 var my_demo = new DemoController();</pre>
-<div id="controller_demo_2" class="example">
-	<h4>controller_demo_2</h4>
+<div id="controller_demo_3" class="example">
+	<h4>controller_demo_3</h4>
 	<p class="text">Please click the "Run Code" button above to activate this example.</p>
 </div>
 
@@ -1262,7 +1324,110 @@ var my_demo = new DemoController();</pre>
 </p>
 
 <h2 id="api:router">Router</h2>
-<p>Coming soon! Lol!</p>
+<p>
+	Composer's <code>Router</code> automatically calls out to application functionality when hash change events occur, allowing you to control your application
+	using hyperlinks, but without the need to reload the page or wire up complicated event handlers. <code>Router</code>'s implementation is simple: pass an object
+	containing URL patterns and their associated handler functions to its constructor, and it does the rest, setting up the hash change listen events and calling
+	your handlers when they occur.
+</p>
+<h3 id="api:router:constructor">constructor <small>new Composer.Router([Object routes], [Object options])</small></h3>
+<p>
+	This initializes <code>Router</code> to start listening for hash change events. <code>routes</code> is an object of the following format:
+</p>
+<pre>var routes = {
+	// path : [ handler, method]
+	
+	'/': ['dashboard', 'load'],
+	'/users/login': ['users', 'load_login_form'],
+	'/users/logout': ['users', 'logout'],
+	'/posts/[a-f0-9+]': ['blog', 'load_post']
+}</pre>
+<p>
+	When a hash change event occurs, <code>Router</code> will catch it and try to map the URL's hash to the path patterns in the <code>routes</code>
+	property names. When a match is found, the corresponding object/method is invoked and given anything after the base path as arguments.
+</p>
+<p>
+	The following <code>options</code> may be passed:
+</p>
+<ul>
+	<li>
+		<strong><code>redirect_initial</code>:</strong><code>true|false</code> (default <code>true</code>)
+		<p>
+			If <code>true</code> the window will redirect to the hashed version of its URL when <code>Router</code> is initialized. For example, this would
+			change <code>http://gonorrhea.com/users/display/42</code> to <code>http://gonorrhea.com/#!/users/display/42</code>.
+		</p>
+	</li>
+	<li>
+		<strong><code>suppress_initial_route</code>:</strong><code>true|false</code> (default <code>false</code>)
+		<p>
+			By default, <code>Router</code> will fire a hash change event immediately after initializing to perform its initial route. You can suppress
+			this behavior with <code>suppress_initial_route</code>.
+		</p>
+	</li>
+	<li>
+		<strong><code>enable_cb</code>:</strong><code>function() { ... }</code> (default <code>function() { return true; }</code>)
+		<p>
+			The function specified in <code>enable_cb</code> is executed immediately when a hash change event occurs. If it returns <code>false</code>,
+			then no routing is performed for the event. By default, <code>enable_cb</code> is a function that simply returns <code>true</code>.
+			By overriding this function, you can enable or disable routing depending on conditions in your app.
+		</p>
+	</li>
+	<li>
+		<strong><code>on_failure</code>:</strong><code>function([Object error]) { ... }</code> (default <code>function() {}</code>)
+		<p>
+			Callback function that is executed when routing fails, such as in cases where there is no matching pattern in <code>routes</code> for the given
+			URL. Information about the failure will be passed in the <code>error</code> object and formatted as such:
+		</p>
+		<pre>{
+	url: 		url,
+	route: 		route|false,	// false if no match found in routes
+	handler_exists:	true|false,
+	action_exists:	true|false
+}</pre>
+	</li>
+</ul>
+<p>Here is a basic example of <code>Router</code> in action.</p>
+<pre class="runnable">// define our routes
+var routes = {
+	'/users/login': ['users', 'load_login_form'],
+	'/posts/[a-f0-9+]': ['blog', 'load_post']
+}
+
+// create our demo hyperlinks
+document.getElement('#routes_demo_1').set('html',
+	'&lt;ul>\
+	&lt;li>&lt;a href="#!/users/login">login&lt;/a>&lt;/li>\
+	&lt;li>&lt;a href="#!/posts/ca009fb">load_post&lt;/a>&lt;/li>\
+	&lt;/ul>');
+
+// users handler
+var users = {
+	login: function() {
+		alert('lol you are now logged in!');
+	}
+};
+
+// blog handler
+var blog = {
+	load_post: function(post) {
+		alert('now loading post ' + post);
+	}
+}
+
+var erroror = function(info) {
+	alert(JSON.stringify(info));
+}
+
+new Composer.Router(routes, {
+	redirect_initial: false,
+	suppress_initial_route: true,
+	on_failure: erroror
+});
+</pre>
+<div id="routes_demo_1" class="example">
+	<h4>routes_demo_1</h4>
+	<p class="text">Please click the "Run Code" button above to activate this example.</p>
+</div>
 <h2 id="api:sync">sync</h2>
 <p>
 	Composer's <code>sync</code> API is simply a placeholder for the server syncing code that you define. Composer assumes nothing about your data syncing
@@ -1328,10 +1493,18 @@ var my_demo = new DemoController();</pre>
 			var runnables = $ES('.runnable');
 			runnables.each(function(el) {
 				var button = $(document.createElement('button'));
-				var code = el.innerHTML.replace('&lt;', '<');
+				var code = el.innerHTML.replace(/\&lt\;/g, '<');
+				var code = code.replace(/\&gt\;/g, '>');
+				var code = code.replace(/\&amp\;/g, '&');
 				button.innerHTML = 'Run Code';
 				button.addEvent('click', function(e) { eval(code) });
 				el.insertBefore(button);			
+			});
+		});
+		</script>
+	</body>
+</html>
+
 			});
 		});
 		</script>
