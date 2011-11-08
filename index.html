@@ -103,7 +103,12 @@
 			</ul>
 		</li>
 		<li><a href="#api:router">Router</a></li>
-		<li><a href="#api:sync">sync</a></li>
+		<li>
+			<a href="#api:sync">sync</a>
+			<ul>
+				<li><a href="#api:sync:call">sync.call</a></li>
+			</ul>
+		</li>
 	</ul>
 </div>
 
@@ -1062,14 +1067,14 @@ people.fetch();</pre>
 
 	className: 'active',
 	
-	events: { 'click button': 'button_press' },
+	events: { 'click button': 'button_press_func' },
 	
 	init: function() {
 		this.my_text.destroy();
 		this.my_button.disabled = false;
 	},
 	
-	button_press: function(e) {
+	button_press_func: function(e) {
 		this.my_list.set('html', 'You clicked the button!');
 	}
 });
@@ -1259,7 +1264,56 @@ var my_demo = new DemoController();</pre>
 <h2 id="api:router">Router</h2>
 <p>Coming soon! Lol!</p>
 <h2 id="api:sync">sync</h2>
-
+<p>
+	Composer's <code>sync</code> API is simply a placeholder for the server syncing code that you define. Composer assumes nothing about your data syncing
+	or server setup and leaves this to the application developer to implement. Some server-side APIs implement robust support for all HTTP methods, whereas
+	others only support <code>GET</code>s and <code>POST</code>s. It's not our place to assume (or judge) anything about your particular approach. Rather
+	than try to provide a cumbersome "one size fits all" solution, we trust the developer to come up with an approach that works for his or her specific app.
+</p>
+<p>
+	In general, your implementation of <code>sync</code> should be able to perform an <code>XMLHttpRequest</code>, write data to the model or collection
+	depending on the response, and execute the <code>success</code> or <code>error</code> callbacks afterwards. For example, the <code>sync</code> invoked from a
+	<code><a href="#api:model:save">Model.save</a></code> might receive an <code>id</code> back from the server after the new record was successfully
+	recorded in the database. In this case, it would make sense to set the id back into the model before executing the <code>success</code> callback.
+</p>
+<h3 id="api:sync:call">sync.call <small>Composer.sync.call(String method, Object model_or_collection, [Object options])</small></h3>
+<p>
+	The <code>call</code> method is called by any Composer method that reads or writes server data and needs to be overridden in order to do anything
+	useful (Specifically, <code>call</code> is invoked by <code><a href="#api:model:fetch">Model.fetch</a></code>,
+	<code><a href="#api:model:save">Model.save</a></code>, <code><a href="#api:model:destroy">Model.destroy</a></code> and
+	<code><a href="#api:collection:fetch">Collection.fetch</a></code>).
+</p>
+<p>
+	Depending on the value of <code>method</code>, <code>sync</code> needs to either create, read, update, or
+	delete (CRUD) server data and execute callback functions upon success or failure. Accordingly, <code>method</code> will be a string of one of the
+	following values:
+</p>
+<ul>
+	<li>
+		<strong><code>"create"</code>:</strong> corresponds to HTTP <code>POST</code>, passed by
+		<code><a href="#api:model:save">Model.save</a></code> when saving new model data to the server.
+	</li>
+	<li>
+		<strong><code>"read"</code>:</strong> corresponds to HTTP <code>GET</code>, passed by
+		<code><a href="#api:model:fetch">Model.fetch</a></code> and <code><a href="#api:collection:fetch">Collection.fetch</a></code> when reading
+		data from the server.
+	</li>
+	<li>
+		<strong><code>"update"</code>:</strong> corresponds to HTTP <code>PUT</code>, passed by
+		<code><a href="#api:model:save">Model.save</a></code> when updating model data on the server.
+	</li>
+	<li>
+		<strong><code>"delete"</code>:</strong> corresponds to HTTP <code>DELETE</code>, passed by
+		<code><a href="#api:model:destroy">Model.destroy</a></code> when deleting model data from the server.
+	</li>
+</ul>
+<p>
+	The second parameter for <code>call</code> is the model or collection being acted upon.
+</p>
+<p>
+	The <code>options</code> parameter defines the callback functions to execute on success or error. These are passed in properties called
+	<code>success</code> and <code>error</code> respectively.
+</p>
 </div>
 </div>
 		<script src="mootools.js"></script>
