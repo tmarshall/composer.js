@@ -16,6 +16,7 @@
 <div id="nav">
 	<ul>
 		<li><a href="#overview"><strong>Composer.js</strong></a></li>
+		<li><a href="#overview:download">Download / Dependencies</a></li>
 		<li><a href="#overview:diff">Framework comparison</a></li>
 		<li>
 			<a href="#api:events">Events</a>
@@ -136,15 +137,23 @@
 	these frameworks, so we built Composer.js.
 </p>
 
+<h2 id="overview:download">Download / Dependencies</h2>
+
+<a class="download" href="composer.js">Download 0.4.1</a>
+<p>
+	Composer's only external dependency is <a href="http://mootools.net">MooTools 1.3+</a>. A good understanding of JavaScript and object oriented
+	programming methodology is recommended.
+</p>
+
 <h2 id="overview:diff">Framework comparison</h2>
 <p>
-	How is composer.js different from backbone and spine?
+	How is Composer.js different from <a href="http://documentcloud.github.com/backbone/">Backbone.js</a> and <a href="http://spinejs.com">Spine</a>?
 </p>
 <table class="compare" cellpadding="0" cellspacing="0" border="0">
 	<tr>
 		<th width="10%">Feature</th>
-		<th width="30%"><a href="http://documentcloud.github.com/backbone/">Backbone.js</a></th>
-		<th width="30%"><a href="http://spinejs.com/">Spine</a></th>
+		<th width="30%">Backbone</a></th>
+		<th width="30%">Spine</th>
 		<th width="30%">Composer.js</th>
 	</tr>
 	<tr>
@@ -357,7 +366,7 @@ nav.promptColor();</pre>
 
 <h3 id="api:model:extend">Model.extend <small>Composer.Model.extend([Object properties])</small></h3>
 <p>
-	To create a <em>Model</em> class of your own, you extend <em>Composer.Model</em> and provide instance <em>properties</em>.
+	To create a Model class of your own, you extend <code>Composer.Model</code> and provide instance properties.
 </p>
 <pre>var Disease = Composer.Model.extend({
 

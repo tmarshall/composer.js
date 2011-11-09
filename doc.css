@@ -24,6 +24,7 @@ table { border-collapse: collapse; border-spacing: 0; }
 
 
 body {font-family: arial; color: #333; font-size: 14px; line-height: 1.5em; background: #fff;}
+em { font-style: italic; }
 h1, h2, h3, h4 {font-weight: bold;}
 h1 {font-size: 32px; margin: 16px 0 30px -16px;}
 h1:first-child {margin-top: 0;}
@@ -38,6 +39,7 @@ pre {padding: 0 15px; margin: 0 0 30px 0; color: #622; font-family: monospace; f
 button { display: block; margin-top: 20px; cursor: pointer; }
 code { border: 1px solid #ddd; padding: 0px 4px; background: #f0f0f0; font-family: monospace; font-size: .85em; }
 code a { color: #333; cursor: pointer; }
+a { color: #66c; }
 
 #container {padding: 0px;}
 
@@ -46,10 +48,28 @@ code a { color: #333; cursor: pointer; }
 #nav ul li { margin-top: 15px; }
 #nav ul ul { margin-left: 15px; list-style-type: square; }
 #nav ul ul li { margin-top: 0px; font-size: .9em; }
-#nav ul ul a {color: #226;}
+#nav ul a {color: #000;}
+#nav ul ul a {color: #622;}
 #content { margin-left: 290px; padding: 40px 40px 40px 0; }
 
 .gray { color: gray; }
+
+a.download { 
+	display: block;
+	border: 1px outset #8b8;
+	padding: 10px 15px;
+	margin: 20px 20px;
+	background: #cec;
+	width: 200px;
+	text-align: center;
+	border-radius: 10px;
+	color: #363;
+	text-decoration: none;
+	text-shadow: 0px 1px 1px rgba(255,255,255,0.9);
+	font-size: 1.5em;
+	font-weight: bold;
+	background: -webkit-gradient(linear, left top, left bottom, from(#bfb), to(#8b8), color-stop(0.5, #9c9), color-stop(0.5, #8b8));
+}
 
 table.compare {width: 80%; margin: 0 20px 16px 20px; border-collapse: collapse;}
 table.compare th {padding: 4px 12px; text-align: left; font-weight: bold; color: #ddd; background: #444;}
