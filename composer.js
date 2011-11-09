@@ -1520,7 +1520,6 @@
 	}
 	Composer.eq	=	eq;
 
-
 	// Creates a simple object with an "extends" function which returns a class
 	// extended from class_type out of the given object
 	var make_instance	=	function(class_type)
@@ -1556,4 +1555,5 @@
 	});
 	Composer.Router	=	Router;
 	window.Composer	=	Composer;
+})();ndow.Composer	=	Composer;
 })();
