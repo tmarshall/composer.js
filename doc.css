@@ -49,6 +49,8 @@ code a { color: #333; cursor: pointer; }
 #nav ul ul a {color: #226;}
 #content { margin-left: 290px; padding: 40px 40px 40px 0; }
 
+.gray { color: gray; }
+
 table.compare {width: 80%; margin: 0 20px 16px 20px; border-collapse: collapse;}
 table.compare th {padding: 4px 12px; text-align: left; font-weight: bold; color: #ddd; background: #444;}
 table.compare th a {color: #99e}

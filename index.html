@@ -103,7 +103,14 @@
 				<li><a href="#api:controller:refresh_elements">refresh_elements</a></li>
 			</ul>
 		</li>
-		<li><a href="#api:router">Router</a></li>
+		<li>
+			<a href="#api:router">Router</a>
+			<ul>
+				<li><a href="#api:router:constructor">constructor</a></li>
+				<li><a href="#api:router:register_callback">register_callback</a></li>
+				<li><a href="#api:router:route">route</a></li>
+			</ul>
+		</li>
 		<li>
 			<a href="#api:sync">sync</a>
 			<ul>
@@ -353,7 +360,7 @@ nav.promptColor();</pre>
 </p>
 <pre>var Disease = Composer.Model.extend({
 
-	init: function() { ... },			// runs on instantiation
+	init: function() { ... },	// runs on instantiation
 
 	get_symptoms: function() { ... },
 
@@ -1326,9 +1333,9 @@ var my_demo = new DemoController();</pre>
 <h2 id="api:router">Router</h2>
 <p>
 	Composer's <code>Router</code> automatically calls out to application functionality when hash change events occur, allowing you to control your application
-	using hyperlinks, but without the need to reload the page or wire up complicated event handlers. <code>Router</code>'s implementation is simple: pass an object
-	containing URL patterns and their associated handler functions to its constructor, and it does the rest, setting up the hash change listen events and calling
-	your handlers when they occur.
+	using hyperlinks, but without the need to reload the page or wire up complicated event handlers. <code>Router</code>'s implementation is simple: pass an
+	object containing URL patterns and their associated handler functions to its constructor, and it does the rest, setting up the <code>hashchange</code>
+	listen events and calling your handlers when they occur.
 </p>
 <h3 id="api:router:constructor">constructor <small>new Composer.Router([Object routes], [Object options])</small></h3>
 <p>
@@ -1340,11 +1347,14 @@ var my_demo = new DemoController();</pre>
 	'/': ['dashboard', 'load'],
 	'/users/login': ['users', 'load_login_form'],
 	'/users/logout': ['users', 'logout'],
-	'/posts/[a-f0-9+]': ['blog', 'load_post']
+	'/posts/([a-f0-9]+)': ['blog', 'load_post']
 }</pre>
 <p>
 	When a hash change event occurs, <code>Router</code> will catch it and try to map the URL's hash to the path patterns in the <code>routes</code>
-	property names. When a match is found, the corresponding object/method is invoked and given anything after the base path as arguments.
+	property names. When a match is found, the corresponding object/method is invoked. Any regular expression group matches within the path (the
+	portions contained within parentheses) are passed as parameters to the handler method. So, for example, the URL <code>#!/posts/32a990e/prettyUrl</code>
+	would match <code>'/posts/([a-f0-9]+)/(.*)': ['blog', 'load_post']</code>, which would effectively call
+	<code>blog.load_post(32a990e, 'prettyUrl')</code>.
 </p>
 <p>
 	The following <code>options</code> may be passed:
@@ -1387,23 +1397,18 @@ var my_demo = new DemoController();</pre>
 	</li>
 </ul>
 <p>Here is a basic example of <code>Router</code> in action.</p>
-<pre class="runnable">// define our routes
-var routes = {
+<pre>var routes = {
 	'/users/login': ['users', 'load_login_form'],
-	'/posts/[a-f0-9+]': ['blog', 'load_post']
+	'/posts/([a-f0-9]+)': ['blog', 'load_post']
 }
-
-// create our demo hyperlinks
-document.getElement('#routes_demo_1').set('html',
-	'&lt;ul>\
-	&lt;li>&lt;a href="#!/users/login">login&lt;/a>&lt;/li>\
-	&lt;li>&lt;a href="#!/posts/ca009fb">load_post&lt;/a>&lt;/li>\
-	&lt;/ul>');
 
 // users handler
 var users = {
 	login: function() {
 		alert('lol you are now logged in!');
+
+		// in a real app, we would ensure the user_login controller is
+		// loaded and render its view
 	}
 };
 
@@ -1411,23 +1416,57 @@ var users = {
 var blog = {
 	load_post: function(post) {
 		alert('now loading post ' + post);
+		
+		// in a real app, we would ensure the blog_post controller is
+		// loaded and render its view
 	}
-}
-
-var erroror = function(info) {
-	alert(JSON.stringify(info));
 }
 
 new Composer.Router(routes, {
 	redirect_initial: false,
-	suppress_initial_route: true,
-	on_failure: erroror
+	suppress_initial_route: true
 });
 </pre>
-<div id="routes_demo_1" class="example">
-	<h4>routes_demo_1</h4>
-	<p class="text">Please click the "Run Code" button above to activate this example.</p>
+<script type="text/javascript">
+	var routes = {
+		'/users/login': ['users', 'load_login_form'],
+		'/posts/([a-f0-9]+)': ['blog', 'load_post']
+	}
+	var users = { load_login_form: function() { alert('lol you are now logged in!'); } };
+	var blog = { load_post: function(post) { alert('now loading post ' + post);	} }
+	var setup_router_demo = function() {
+		new Composer.Router(routes, {
+			redirect_initial: false,
+			suppress_initial_route: true
+		});
+	}
+</script>
+<div id="routes_demo_1" class="example active">
+	<h4>routes demo</h4>
+	<p>Clicking on these links will activate the routes defined in the above code block.</p>
+	<ul>
+		<li><a href="#!/users/login">#!/users/login</a></li>
+		<li><a href="#!/posts/2af09e33">#!/posts/2af09e33</a></li>
+	</ul>
 </div>
+<h3 id="api:router:register_callback">Router.register_callback <small>router.register_callback(Function fn)</small></h3>
+<p>
+	Registers a callback function that is executed whenever the route changes (either via a hash change or
+	by explicitly invoking <code><a href="#api:router:route">Router.route</a></code>). Callback functions are executed
+	within the scope of the <code>Router</code> instance. The hash url (stripped of its leading <code>!</code>
+	[exclamation point]) is passed as the sole argument to each callback function.
+</p>
+<pre>my_router.register_callback(function(url) {
+	alert('If I were not popping up and annoying you, I would be routing to: '+ url);
+});</pre>
+
+<h3 id="api:router:route">Router.route <small>router.route(String url)</small></h3>
+<p>
+	Wrapper around the routing functionality. Basically, instead of doing a 
+	<code>window.location = '#!/my/route';</code>, you can do <code>router.route('#!/my/route');</code>. This is a
+	more elegant way to change the route from within your application code.
+</p>
+
 <h2 id="api:sync">sync</h2>
 <p>
 	Composer's <code>sync</code> API is simply a placeholder for the server syncing code that you define. Composer assumes nothing about your data syncing
@@ -1437,8 +1476,8 @@ new Composer.Router(routes, {
 </p>
 <p>
 	In general, your implementation of <code>sync</code> should be able to perform an <code>XMLHttpRequest</code>, write data to the model or collection
-	depending on the response, and execute the <code>success</code> or <code>error</code> callbacks afterwards. For example, the <code>sync</code> invoked from a
-	<code><a href="#api:model:save">Model.save</a></code> might receive an <code>id</code> back from the server after the new record was successfully
+	depending on the response, and execute the <code>success</code> or <code>error</code> callbacks afterwards. For example, the <code>sync</code> invoked from
+	a <code><a href="#api:model:save">Model.save</a></code> might receive an <code>id</code> back from the server after the new record was successfully
 	recorded in the database. In this case, it would make sense to set the id back into the model before executing the <code>success</code> callback.
 </p>
 <h3 id="api:sync:call">sync.call <small>Composer.sync.call(String method, Object model_or_collection, [Object options])</small></h3>
@@ -1500,6 +1539,11 @@ new Composer.Router(routes, {
 				button.addEvent('click', function(e) { eval(code) });
 				el.insertBefore(button);			
 			});
+			var pres = $ES('pre');
+			pres.each(function(el) {
+				el.set('html', el.innerHTML.replace(/(\s)\/\/(.*)\n?/g, '<span class="gray">$1//$2</span>\n'));
+			});
+			setup_router_demo();
 		});
 		</script>
 	</body>

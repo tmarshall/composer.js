@@ -1542,5 +1542,4 @@
 	});
 	Composer.Router	=	Router;
 	window.Composer	=	Composer;
-})();ndow.Composer	=	Composer;
 })();
