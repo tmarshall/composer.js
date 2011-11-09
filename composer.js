@@ -1,3 +1,16 @@
+/**
+ * Composer.js is an MVC framework for creating and organizing javascript 
+ * applications. For documentation, please visit:
+ *
+ *     http://orthecreedence.github.com/composer.js/
+ * 
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (c) 2011, Lyon Bros Enterprises, LLC. (http://www.lyonbros.com)
+ * 
+ * Licensed under The MIT License. 
+ * Redistributions of files must retain the above copyright notice.
+ */
 (function() {
 	var Composer	=	{};
 
@@ -94,7 +107,7 @@
 		 */
 		trigger: function(ev)
 		{
-			var args	=	shallow_array_clone($A(arguments));
+			var args	=	shallow_array_clone(Array.from(arguments));
 			[ev, 'all'].each(function(type) {
 				if(!this._events[type]) return;
 				this._events[type].each(function(callback) {
@@ -151,7 +164,7 @@
 		 */
 		fire_event: function()
 		{
-			var args	=	shallow_array_clone($A(arguments));
+			var args	=	shallow_array_clone(Array.from(arguments));
 			var evname	=	args.shift();
 			var options	=	args.shift();
 
@@ -395,7 +408,7 @@
 				if(success) success(model, res);
 			}.bind(this);
 			options.error	=	wrap_error(options.error ? options.error.bind(this) : null, this, options);
-			return (this.sync || Composer.sync).call('read', this, options);
+			return (this.sync || Composer.sync).call(this, 'read', this, options);
 		},
 
 		/**
@@ -415,7 +428,7 @@
 				if(success) success(model, res);
 			}.bind(this);
 			options.error	=	wrap_error(options.error ? options.error.bind(this) : null, this, options);
-			return (this.sync || Composer.sync).call((this.is_new() ? 'create' : 'update'), this, options);
+			return (this.sync || Composer.sync).call(this, (this.is_new() ? 'create' : 'update'), this, options);
 		},
 
 		/**
@@ -437,7 +450,7 @@
 				if(success) success(model, res);
 			}.bind(this);
 			options.error	=	wrap_error(options.error ? options.error.bind(this) : null, this, options);
-			return (this.sync || Composer.sync).call('delete', this, options);
+			return (this.sync || Composer.sync).call(this, 'delete', this, options);
 		},
 
 		/**
@@ -952,7 +965,7 @@
 				if(success) success(model, res);
 			}.bind(this);
 			options.error	=	wrap_error(options.error ? options.error.bind(this) : null, this, options);
-			return (this.sync || Composer.sync).call('read', this, options);
+			return (this.sync || Composer.sync).call(this, 'read', this, options);
 		},
 
 		/**
@@ -1127,21 +1140,21 @@
 		},
 
 		/**
-		 * replace this controller's conatiner element (this.el) with another element.
+		 * replace this controller's container element (this.el) with another element.
 		 * also refreshes the events/elements associated with the controller
 		 */
 		replace: function(element)
 		{
-			var rep		=	[this.el, element.el || element];
-			var prev	=	rep[0];
-			this.el		=	rep[1];
-
-			this.el.replaces(prev);
+			if(this.el.parentNode)
+			{
+				element.replaces(this.el);
+			}
+			this.el	=	element;
 
 			this.refresh_elements();
 			this.delegate_events();
 
-			return this.el;
+			return element;
 		},
 
 		/**
@@ -1506,6 +1519,7 @@
 		return result;
 	}
 	Composer.eq	=	eq;
+
 
 	// Creates a simple object with an "extends" function which returns a class
 	// extended from class_type out of the given object
