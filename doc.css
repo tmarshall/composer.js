@@ -26,7 +26,7 @@ table { border-collapse: collapse; border-spacing: 0; }
 body {font-family: arial; color: #333; font-size: 14px; line-height: 1.5em; background: #fff;}
 em { font-style: italic; }
 h1, h2, h3, h4 {font-weight: bold;}
-h1 {font-size: 32px; margin: 16px 0 30px -16px;}
+h1 {font-size: 32px; margin: 40px 0 30px -16px;}
 h1:first-child {margin-top: 0;}
 h2 {font-size: 24px; margin: 10px 0 12px -8px; padding: 12px 6px; border-bottom: 1px dotted #aaa; }
 h3 {font-size: 18px; margin: 25px 0 9px 0;}
@@ -44,12 +44,13 @@ a { color: #66c; }
 #container {padding: 0px;}
 
 #nav {position: fixed; left: 0px; top: 0px; width: 180px; height: 100%; overflow: auto; overflow-y: scroll; padding: 0px 30px 50px 30px; border-right: 1px dotted #aaa; background: #fed; }
+#nav h2 { font-size: 1.1em; padding: 0px 0px 0px 0px; margin: 30px 0 0 0; }
 #nav ul {list-style: none; margin: 0; padding: 0;}
 #nav ul li { margin-top: 15px; }
 #nav ul ul { margin-left: 15px; list-style-type: square; }
 #nav ul ul li { margin-top: 0px; font-size: .9em; }
 #nav ul a {color: #000;}
-#nav ul ul a {color: #622;}
+#nav ul ul a {color: #432;}
 #content { margin-left: 290px; padding: 40px 40px 40px 0; }
 
 .gray { color: gray; }

@@ -18,6 +18,7 @@
 		<li><a href="#overview"><strong>Composer.js</strong></a></li>
 		<li><a href="#overview:download">Download / Dependencies</a></li>
 		<li><a href="#overview:diff">Framework comparison</a></li>
+		<h2>API Documentation</h2>
 		<li>
 			<a href="#api:events">Events</a>
 			<ul>
@@ -227,6 +228,8 @@
 	Note that this table is meant to highlight the differences. There are many more similarities between the
 	frameworks.
 </p>
+
+<h1>API Documentation</h1>
 
 <h2 id="api:events">Composer.Events</h2>
 <p>
@@ -1546,12 +1549,8 @@ new Composer.Router(routes, {
 				var code = code.replace(/\&gt\;/g, '>');
 				var code = code.replace(/\&amp\;/g, '&');
 				button.innerHTML = 'Run Code';
-				button.addEvent('click', function(e) { eval(code) });
+				button.addEvent('click', function(e) { eval(code); });
 				el.insertBefore(button);			
-			});
-			var pres = $ES('pre');
-			pres.each(function(el) {
-				el.set('html', el.innerHTML.replace(/(\s)\/\/(.*)\n?/g, '<span class="gray">$1//$2</span>\n'));
 			});
 			setup_router_demo();
 		});
