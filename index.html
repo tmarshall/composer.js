@@ -367,7 +367,7 @@ nav.set({color: '#fed'});
 
 nav.promptColor();</pre>
 
-<h3 id="api:model:extend">Model.extend <small>Composer.Model.extend([Object properties])</small></h3>
+<h3 id="api:model:extend">Model.extend <small>Composer.Model.extend([Object properties], [Base Model Class])</small></h3>
 <p>
 	To create a Model class of your own, you extend <code>Composer.Model</code> and provide instance properties.
 </p>
@@ -379,6 +379,16 @@ nav.promptColor();</pre>
 
 	is_sexually_transmitted: function() { ... }
 });</pre>
+<p>
+	Models can extend each other to inherit their functions and properties as well:
+</p>
+<pre>var Herpes = Composer.Model.extend({
+	is_sexually_transmitted: function() {return true;}
+}, Disease);	// <-- base class passed as second parameter</pre>
+<p>
+	Herpes has all the properties and functions of "Disease," overriding the parent class' "is_sextually_transmitted" function. 
+</p>
+
 
 <h3 id="api:model:constructor">Model.init / constructor <small>new Model([Object attributes])</small></h3>
 <p>
@@ -742,9 +752,10 @@ alert(chuckles.get_url());
 	<code><a href="#api:fetch">Composer.sync</a></code>).
 </p>
 
-<h3 id="api:collection:extend">Collection.extend <small>Composer.Collection.extend([Object properties])</small></h3>
+<h3 id="api:collection:extend">Collection.extend <small>Composer.Collection.extend([Object properties], [Base Collection Class])</small></h3>
 <p>
-	To create a Collection class of your own, <code>extend</code> Composer.Collection, providing instance properties.
+	To create a Collection class of your own, <code>extend</code> Composer.Collection, providing instance properties and optionally another
+	Collection class to extend (see <a href="#api:model:extend">Model.extend</a> for example usage).
 </p>
 
 <h3 id="api:collection:model">Collection.model <small>collection.model</small></h3>
@@ -1123,6 +1134,42 @@ var my_demo = new DemoController();
 <pre>var TestController = Composer.Controller.extend({
 	...
 });</pre>
+<p>
+	Note that extending another controller will not only inherit its properties and functions, but will merge its events and elements into
+	the extending class:
+</p>
+
+<pre>var Base = Composer.Controller.extend({
+	events: {
+		'click .mydiv': 'clicked_div'
+	},
+	clicked_div: function(e) { ... }
+});
+
+var Users = Composer.Controller.extend({
+	// note we aren't explicitely defining the 'click .div' event...it's inherited
+	events: {
+		'submit form': 'submit'
+	},
+
+	clicked_div: function(e) {
+		// do something else
+	},
+
+	submit: function() {...}
+}, Base);</pre>
+<p>
+	In the above example, Users overrode the "clicked_div" function, BUT the event 'click .mydiv' was inherited and appended to the events object for
+	the new controller, effectively making its events:
+</p>
+<pre>{
+	'click .mydiv': 'clicked_div',
+	'submit form': 'submit'
+}</pre>
+<p>
+As mentioned, the same merging will happen with "elements" as well. When naming conflicts occur, priority is given to the extending class, and the base
+events/elements are overriden.
+</p>
 
 <h3 id="api:model:constructor">Controller.init / constructor <small>new Controller([Object properties])</small></h3>
 <p>
