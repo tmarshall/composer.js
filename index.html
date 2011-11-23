@@ -545,11 +545,9 @@ alert("Dessert will be " + (new Meal()).get('dessert'));</pre>
 <pre>// Get the person model state from server
 person.fetch();</pre>
 
-<h3 id="api:model:save">Model.save <small>model.save([Object attributes], [Object options])</small></h3>
+<h3 id="api:model:save">Model.save <small>model.save([Object options])</small></h3>
 <p>
 	Save a model to your database (or alternative persistence layer), by delegating to <code><a href="#api.sync">Composer.sync</a></code>.
-	The <strong>attributes</strong> object
-	(as in <code><a href="#api:model:set">set</a></code>) should contain any data attributes you'd like to change in the process.
 	If the model has a validate method, and validation fails, the model will not be saved. If
 	the model <code><a href="#api:model:is_new">is_new()</a></code>, the save will be a <code>"create"</code> (HTTP <code>POST</code>), if the
 	model already exists on	the server, the save will be an	<code>"update"</code> (HTTP <code>PUT</code>).
@@ -573,14 +571,15 @@ var my_book = new Book({
 
 my_book.save();				// sync does a "create"
 
-my_book.save({author: "Jeff"});		// sync does an "update"</pre>
+my_book.set({author: "Jeff"});
+my_book.save();		// sync does an "update"</pre>
 <p>
 	<strong>save</strong> accepts <code>success</code> and <code>error</code> callbacks in the options hash, which are passed
 	<code>(model, response)</code> as arguments. The <code>error</code> callback will also be invoked if the model has a validate
 	method, and validation fails. If a server-side validation fails, return a non-200 HTTP response code, along with an error response
 	in text or JSON.
 </p>
-<pre>my_book.save({author: "F.D.R."}, {error: function(){ ... }});</pre>
+<pre>my_book.save({error: function(){ ... }});</pre>
 
 <h3 id="api:model:destroy">Model.destroy <small>model.destroy([options])</small></h3>
 <p>
