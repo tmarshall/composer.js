@@ -140,7 +140,7 @@
 
 <h2 id="overview:download">Download / Dependencies</h2>
 
-<a class="download" href="composer.js">Download 0.5.4</a>
+<a class="download" href="composer.js">Download 0.5.6</a>
 <p>
 	Composer's only external dependency is <a href="http://mootools.net">MooTools 1.3+</a>. A good understanding of JavaScript and object oriented
 	programming methodology is recommended.
@@ -766,6 +766,14 @@ alert(chuckles.get_url());
 <pre>var Library = Composer.Collection.extend({
 	model: Book
 });</pre>
+<p>
+	You can also specify the model as a string. This is useful if for some reason you need to load your collection before your model. Note that
+	the model is converted from a string to an object on instantiation (not definition) of the Collection:
+</p>
+<pre>var Library = Composer.Collection.extend({
+	model: 'Book'
+});
+var library = new Library();	// <-- 'Book' becomes Book here</pre>
 
 <h3 id="api:collection:constructor">Collection.init / constructor <small>new Collection([Array models], [Object properties], [Object options])</small></h3>
 <p>
