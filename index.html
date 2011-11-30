@@ -1516,11 +1516,12 @@ new Composer.Router(routes, {
 		<li><a href="#!/posts/2af09e33">#!/posts/2af09e33</a></li>
 	</ul>
 </div>
-<h3 id="api:router:register_callback">Router.register_callback <small>router.register_callback(Function fn)</small></h3>
+<h3 id="api:router:register_callback">Router.register_callback <small>router.register_callback(Function fn, [Object bind_to])</small></h3>
 <p>
 	Registers a callback function that is executed whenever the route changes (either via a hash change or
-	by explicitly invoking <code><a href="#api:router:route">Router.route</a></code>). Callback functions are executed
-	within the scope of the <code>Router</code> instance. The hash url (stripped of its leading <code>!</code>
+	by explicitly invoking <code><a href="#api:router:route">Router.route</a></code>). By default, callback functions are executed
+	within the scope of the <code>Router</code> instance. You can bind the callback to another scope by specifying a <code>bind_to</code> parameter.
+	The hash url (stripped of its leading <code>!</code>
 	[exclamation point]) is passed as the sole argument to each callback function.
 </p>
 <pre>my_router.register_callback(function(url) {
