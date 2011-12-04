@@ -68,7 +68,7 @@
 	 * controller to monitor changes on collections of items instead of each item
 	 * individually.
 	 */
-	Events	=	new Class({
+	var Events	=	new Class({
 		_events: {},
 
 		/**
@@ -214,14 +214,14 @@
 
 			// add event name back into the beginning of args
 			args.unshift(evname);
-			if(!options.silent)
+			if(!options.silent && !options.not_silent)
 			{
 				// not silent, fire the event
 				return this.trigger.apply(this, args);
 			}
 			else if(
-				(typeof(options.not_silent) == 'array' && options.not_silent.contains(evname)) ||
-				(options.not_silent == evname)
+				options.not_silent == evname ||
+				(options.not_silent && options.not_silent.length && options.not_silent.contains(evname))
 			)
 			{
 				// silent, BUT the given event is allowed. fire it.
@@ -673,15 +673,17 @@
 				this[x]	=	params[x];
 			}
 
+			// allow Collection.model to be a string so load-order dependencies can be
+			// kept to a minimum. here, we convert the string to an object on collection
+			// instantiation and store it back into Collection.model.
+			//
+			// NOTE: this happens before the initial reset =]
+			this.model	=	typeof(this.model) == 'string' ? eval(this.model) : this.model;
+
 			if(models)
 			{
 				this.reset(models, options);
 			}
-
-			// allow Collection.model to be a string so load-order dependencies can be
-			// kept to a minimum. here, we convert the string to an object on collection
-			// instantiation and store it back into Collection.model.
-			this.model	=	typeof(this.model) == 'string' ? eval(this.model) : this.model;
 
 			this.init();
 		},
@@ -725,14 +727,14 @@
 		{
 			if (data instanceof Array)
 			{
-				return Object.each(data, function(model) { this.add(model) }, this);
+				return Object.each(data, function(model) { this.add(model, options) }, this);
 			}
-			
-			// if we are passing raw data, create a new model from data
-			var model		=	data.__is_model ? data : new this.model(data);
 			
 			options || (options = {});
 
+			// if we are passing raw data, create a new model from data
+			var model		=	data.__is_model ? data : new this.model(data, options);
+			
 			// reference this collection to the model
 			if(!model.collections.contains(this))
 			{
@@ -1383,11 +1385,9 @@
 		/**
 		 * run the given callback when a route changes
 		 */
-		register_callback: function(cb, bind_to)
+		register_callback: function(cb)
 		{
-			bind_to || (bind_to = this);
-			
-			this.callbacks.push(cb.bind(bind_to));
+			this.callbacks.push(cb);
 		},
 
 		/**
