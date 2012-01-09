@@ -1546,14 +1546,14 @@ new Composer.Router(routes, {
 	parameter is not defined.
 </p>
 <pre class="runnable">
-	var my_router	=	new Composer.Router({});
+	var my_router	=	new Composer.Router({}, {redirect_initial: false});
 
 	alert(my_router.get_param('url_param_1', 'click the link below!'));
 	alert(my_router.get_param('url_param_2'));
 </pre>
 <div class="example active">
 	<h4>get_param demo</h4>
-	<p><strong><a href="#api:router:get_param?url_param_1=value_1&url_param_2=sex+maniac">Click this link to append some querystring parameters to the URL.</a></strong></p>
+	<p><strong><a href="?url_param_1=value_1&url_param_2=sex%20maniac#api:router:get_param">Click this link to append some querystring parameters to the URL.</a></strong></p>
 	<p>Then run the example code below.</p>
 </div>
 
