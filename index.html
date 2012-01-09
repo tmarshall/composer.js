@@ -111,6 +111,7 @@
 				<li><a href="#api:router:constructor">constructor</a></li>
 				<li><a href="#api:router:register_callback">register_callback</a></li>
 				<li><a href="#api:router:route">route</a></li>
+				<li><a href="#api:router:get_param">get_param</a></li>
 			</ul>
 		</li>
 		<li>
@@ -1404,6 +1405,10 @@ var my_demo = new DemoController();</pre>
 	object containing URL patterns and their associated handler functions to its constructor, and it does the rest, setting up the <code>hashchange</code>
 	listen events and calling your handlers when they occur.
 </p>
+<p>
+	Router also includes <code><a href="#api:router:get_param">get_param</a></code>, a convenient function to get URL querystring parameter values, allowing
+	you to include optional parameters in the URL using the standard <code>?param1=val1&param2=val2&...</code> format.
+</p>
 <h3 id="api:router:constructor">constructor <small>new Composer.Router([Object routes], [Object options])</small></h3>
 <p>
 	This initializes <code>Router</code> to start listening for hash change events. <code>routes</code> is an object of the following format:
@@ -1534,6 +1539,23 @@ new Composer.Router(routes, {
 	<code>window.location = '#!/my/route';</code>, you can do <code>router.route('#!/my/route');</code>. This is a
 	more elegant way to change the route from within your application code.
 </p>
+
+<h3 id="api:router:get_param">Router.get_param <small>router.get_param(String param_name, [Mixed default_value])</small></h3>
+<p>
+	Returns the value of the URL querystring parameter specified by <code>param_name</code>, optionally including a default value to return if a matching
+	parameter is not defined.
+</p>
+<pre class="runnable">
+	var my_router	=	new Composer.Router({});
+
+	alert(my_router.get_param('url_param_1', 'click the link below!'));
+	alert(my_router.get_param('url_param_2'));
+</pre>
+<div class="example active">
+	<h4>get_param demo</h4>
+	<p><strong><a href="#api:router:get_param?url_param_1=value_1&url_param_2=sex+maniac">Click this link to append some querystring parameters to the URL.</a></strong></p>
+	<p>Then run the example code below.</p>
+</div>
 
 <h2 id="api:sync">sync</h2>
 <p>
