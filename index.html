@@ -111,7 +111,6 @@
 				<li><a href="#api:router:constructor">constructor</a></li>
 				<li><a href="#api:router:register_callback">register_callback</a></li>
 				<li><a href="#api:router:route">route</a></li>
-				<li><a href="#api:router:get_param">get_param</a></li>
 			</ul>
 		</li>
 		<li>
@@ -1539,23 +1538,6 @@ new Composer.Router(routes, {
 	<code>window.location = '#!/my/route';</code>, you can do <code>router.route('#!/my/route');</code>. This is a
 	more elegant way to change the route from within your application code.
 </p>
-
-<h3 id="api:router:get_param">Router.get_param <small>router.get_param(String param_name, [Mixed default_value])</small></h3>
-<p>
-	Returns the value of the URL querystring parameter specified by <code>param_name</code>, optionally including a default value to return if a matching
-	parameter is not defined.
-</p>
-<pre class="runnable">
-	var my_router	=	new Composer.Router({}, {redirect_initial: false});
-
-	alert(my_router.get_param('url_param_1', 'click the link below!'));
-	alert(my_router.get_param('url_param_2'));
-</pre>
-<div class="example active">
-	<h4>get_param demo</h4>
-	<p><strong><a href="?url_param_1=value_1&url_param_2=sex%20maniac#api:router:get_param">Click this link to append some querystring parameters to the URL.</a></strong></p>
-	<p>Then run the example code below.</p>
-</div>
 
 <h2 id="api:sync">sync</h2>
 <p>
