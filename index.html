@@ -140,7 +140,7 @@
 
 <h2 id="overview:download">Download / Dependencies</h2>
 
-<a class="download" href="composer.js">Download 0.5.7</a>
+<a class="download" href="composer.js">Download 0.5.8</a>
 <p>
 	Composer's only external dependency is <a href="http://mootools.net">MooTools 1.3+</a>. A good understanding of JavaScript and object oriented
 	programming methodology is recommended.
@@ -271,10 +271,11 @@ mynote.set({ text: 'my goat hurts' });</pre>
 </p>
 
 
-<h3 id="api:events:bind">Events.bind <small>object.bind(String event_name, function callback)</small></h3>
+<h3 id="api:events:bind">Events.bind <small>object.bind(String event_name, function callback [, string callback_name])</small></h3>
 <p>
 	Binds an event to object. The event under "event_name" can be an arbitrary string, or an event used by
-	Composer.js internally. 
+	Composer.js internally. You can optionally attach a name (callback_name) to the callback to make it easier
+	to unbind later on. More on this further down.
 </p>
 <p>
 	There are two special events to be aware of:
@@ -308,7 +309,7 @@ mymodel.set({ age: 43 });		// <- this will NOT trigger the above event
 mymodel.set({ name: 'suzy' });		// <- this will trigger the event, because the name changed</pre>
 	</li>
 </ul>
-<h3 id="api:events:unbind">Events.unbind <small>object.unbind(String event_name, function callback)</small></h3>
+<h3 id="api:events:unbind">Events.unbind <small>object.unbind(String event_name, mixed callback)</small></h3>
 <p>
 	Removes a previously-bound callback function from an object. If no callback is specified, all callbacks for the event will be removed.
 	If no event is specified, all event callbacks on the object will be removed.
@@ -319,6 +320,45 @@ mymodel.set({ name: 'suzy' });		// <- this will trigger the event, because the n
 mymodel.unbind("change");		// Removes all "change" callbacks
 
 mymodel.unbind();			// Removes all callbacks on the object</pre>
+
+
+<p>
+	As previously mentioned, you can call <code><a href="#api:events:bind">Events.bind</a></code> with an optional
+	name parameter that allows you to attach a name to an event. This is useful in cases where you bind a function
+	but don't neccessarily have access to the function later on, so wouldn't be able to unbind it. Instead, you 
+	can pass the callback's name into <code>Events.unbind</code> instead of the callback itself to unbind it.
+</p>
+<p>
+	The following code is an example of a common problem <em>(the following code won't work as expected)</em>:
+</p>
+
+<pre>MyController = Composer.Controller.extend({
+	init: function() {
+		this.model.bind('change', this.render.bind(this));
+		this.model.unbind('change', this.render.bind(this));
+	}
+})</pre>
+
+<p>
+	Notice how we use <code>this.render.bind(this)</code> which creates a wrapper function for this.render. This
+	is all fine and good, except that when you call <code>this.model.unbind</code>, the callback being passed in
+	is a different function than the one we bound, since MooTools' Function.bind method creates a new wrapper
+	function each time called. Instead of tracking all the instances of your bound functions so you can call them
+	with unbind later, you can do the following:
+</p>
+
+<pre>MyController = Compoer.Controller.extend({
+	init: function() {
+		this.model.bind('change', this.render.bind(this), 'model_change:render');
+		this.model.unbind('change', 'model_change:render');
+	}
+});</pre>
+
+<p>
+	We unbound the function not using the callback as a reference, but the callback's name which we assigned in 
+	<code>this.model.bind</code> as the last parameter. This was a common enough instance for us to justify 
+	building named callbacks into the Composer event system.
+</p>
 
 <h3 id="api:events:trigger">Events.trigger <small>object.trigger(String event_name, [arg1, [arg2, ...]])</small></h3>
 <p>
