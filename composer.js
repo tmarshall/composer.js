@@ -297,7 +297,7 @@
 			data || (data = {});
 
 			// merge the defaults into the data
-			data	=	Object.merge(Object.clone(this.defaults), data);
+			data	=	Object.merge({}, Object.clone(this.defaults), data);
 
 			// assign the unique app id
 			this._cid	=	Composer.cid();
@@ -762,8 +762,10 @@
 			}
 			else
 			{
-				// no sort fn, add model to the end of the list
-				this._models.push(model);
+				if (typeof(options.at) == 'number')
+					this._models.splice(options.at, 0, model);
+				else
+					this._models.push(model);
 			}
 
 			// listen to the model's events so we can propogate them
@@ -1148,9 +1150,15 @@
 			base || (base = Controller);
 			obj	=	this.parent.call(this, obj, base);
 
+			// have to do some annoying trickery here to get the actual events/elements
+			var base_events		=	Object.merge({}, new base().events || this.events || {});
+			var base_elements	=	Object.merge({}, new base().elements || this.elements || {});
+
 			// extend the base object's events and elements
-			obj.events		=	Object.merge(this.events || {}, obj.events);
-			obj.elements	=	Object.merge(this.elements || {}, obj.elements);
+			// NOTE: the first {} in the object is there because the merge is destructive
+			//       to the first argument (we don't want that).
+			obj.events		=	Object.merge({}, base_events, obj.events);
+			obj.elements	=	Object.merge({}, base_elements, obj.elements);
 
 			return this._do_extend(obj, base);
 		},
