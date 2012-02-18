@@ -82,21 +82,31 @@
 		 * Whenever mymodel is changed in any way, the "render" function for the 
 		 * current object (probably a controller in this instance) will be called.
 		 */
-		bind: function(name, callback, callback_name)
+		bind: function(ev, callback, callback_name)
 		{
+			if(typeof(ev) == 'object' && ev.length)
+			{
+				// it's an array, process each binding separately
+				return ev.each(function(evname) {
+					this.bind(evname, callback, callback_name);
+				}, this);
+			}
 			callback_name || (callback_name = null);
 
 			if(callback_name && !this._named_events[callback_name])
 			{
+				// prepend event type to callback name
+				callback_name	=	ev+':'+callback_name;
+
 				// assign the callback into the named collection so it can be retrieved
 				// later by name if required.
 				this._named_events[callback_name]	=	callback;
 			}
 
-			this._events[name] || (this._events[name] = []);
-			if(!this._events[name].contains(callback))
+			this._events[ev] || (this._events[ev] = []);
+			if(!this._events[ev].contains(callback))
 			{
-				this._events[name].push(callback);
+				this._events[ev].push(callback);
 			}
 
 			return this;
@@ -120,7 +130,7 @@
 			var args	=	shallow_array_clone(Array.from(arguments));
 			[ev, 'all'].each(function(type) {
 				if(!this._events[type]) return;
-				this._events[type].each(function(callback) {
+				Array.clone(this._events[type]).each(function(callback) {
 					callback.apply(this, (type == 'all') ? args : args.slice(1));
 				}, this);
 			}, this);
@@ -133,6 +143,14 @@
 		 */
 		unbind: function(ev, callback)
 		{
+			if(typeof(ev) == 'object' && ev.length)
+			{
+				// it's an array, process each item individually
+				return ev.each(function(evname) {
+					this.unbind(evname, callback);
+				}, this);
+			}
+
 			if(typeof(ev) == 'undefined')
 			{
 				// no event passed, unbind everything
@@ -150,7 +168,8 @@
 			{
 				// load the function we assigned the name to and assign it to "callback",
 				// also removing the named reference after we're done.
-				var fn	=	this._named_events[callback];
+				callback	=	ev+':'+callback;
+				var fn		=	this._named_events[callback];
 				delete this._named_events[callback];
 				var callback	=	fn;
 			}
@@ -190,11 +209,21 @@
 				return this.trigger.apply(this, args);
 			}
 			else if(
-				options.not_silent == evname ||
-				(options.not_silent && options.not_silent.length && options.not_silent.contains(evname))
+				options.not_silent &&
+				(options.not_silent == evname ||
+				 (options.not_silent.contains && options.not_silent.contains(evname)))
 			)
 			{
 				// silent, BUT the given event is allowed. fire it.
+				return this.trigger.apply(this, args);
+			}
+			else if(
+				options.silent && 
+				((typeof(options.silent) == 'string' && options.silent != evname) ||
+				 (options.silent.contains && !options.silent.contains(evname)))
+			)
+			{
+				// the current event is not marked to be silent, fire it
 				return this.trigger.apply(this, args);
 			}
 			return this;
@@ -411,6 +440,7 @@
 			this.fire_event('change:'+key, options, this, void 0, options);
 			this.fire_event('change', options, this, options);
 			this._changed	=	false;
+			return this;
 		},
 
 		/**
@@ -730,7 +760,7 @@
 			options || (options = {});
 
 			// if we are passing raw data, create a new model from data
-			var model		=	data.__is_model ? data : new this.model(data, options);
+			var model	=	data.__is_model ? data : new this.model(data, options);
 			
 			// reference this collection to the model
 			if(!model.collections.contains(this))
@@ -757,6 +787,8 @@
 			model.bind('all', this._model_event.bind(this));
 
 			this.fire_event('add', options, model, this, options);
+
+			return model;
 		},
 
 		/**
@@ -788,6 +820,37 @@
 
 			// remove the model from the collection
 			this._remove_reference(model);
+		},
+
+		/**
+		 * given a model, check if its ID is already in this collection. if so,
+		 * replace is with the given model, otherwise add the model to the collection.
+		 */
+		upsert: function(model, options)
+		{
+			options || (options = {});
+
+			var existing	=	this.find_by_id(model.id());
+			if(existing)
+			{
+				// reposition the model if necessary
+				var existing_idx	=	this.index_of(existing);
+				if(typeof(options.at) == 'number' && existing_idx != options.at)
+				{
+					this._models.splice(existing_idx, 1);
+					this._models.splice(options.at, 0, existing);
+					this.fire_event('sort', options);
+				}
+
+				// replace the data in the existing model with the new model's
+				existing.set(model.toJSON(), Object.merge({}, options, {silent: true, upsert: true}));
+
+				return existing;
+			}
+
+			// model is not in this collection, add it
+			this.add(model, options);
+			return model;
 		},
 
 		/**
@@ -826,13 +889,19 @@
 			}
 			this.add(data, options);
 
-			this.fire_event('reset', options);
+			this.fire_event('reset', options, options);
 		},
 
 		/**
 		 * not normally necessary to call this, unless collection.sortfn changes after
 		 * instantiation of the data. sort order is normall maintained upon adding of
 		 * data viw Collection.add().
+		 *
+		 * However, since the sorting criteria for the models can be modified manually
+		 * and it's not always desired to sort automatically, you can call this method
+		 * to re-sort the data in the collection via the bubble-up eventing:
+		 *
+		 * mycollection.bind('change:sort_order', mycollection.sort.bind(mycollection))
 		 */
 		sort: function(options)
 		{
@@ -922,10 +991,11 @@
 		/**
 		 * convenience function to find a model by id
 		 */
-		find_by_id: function(id)
+		find_by_id: function(id, strict)
 		{
+			strict	=	!!strict;
 			return this.find(function(model) {
-				if(model.id() == id)
+				if(model.id(strict) == id)
 				{
 					return true;
 				}
@@ -991,6 +1061,7 @@
 				for(var key in selector)
 				{
 					var val	=	selector[key];
+					if(typeof(val) == 'string') val = '"'+val+'"';
 					qry.push('data.get("'+key+'") == ' + val);
 				}
 				var fnstr	=	'if(' + qry.join('&&') + ') { return true; }';
@@ -1030,6 +1101,16 @@
 		{
 			var models	=	this.models();
 			return (typeof(n) != 'undefined' && parseInt(n) != 0) ? models.slice(models.length - n) : models[0];
+		},
+
+		/**
+		 * returns the model at the specified index. if there is no model there,
+		 * return false
+		 */
+		at: function(n)
+		{
+			var model	=	this._models[n];
+			return (model || false);
 		},
 
 		/**
@@ -1124,8 +1205,10 @@
 		 * CTOR. instantiate main container element (this.el), setup events and
 		 * elements, and call init()
 		 */
-		initialize: function(params)
+		initialize: function(params, options)
 		{
+			options || (options = {});
+
 			for(x in params)
 			{
 				this[x]	=	params[x];
@@ -1136,7 +1219,7 @@
 			
 			if(this.inject)
 			{
-				this.attach();
+				this.attach(options);
 			}
 			
 			if(this.className)
@@ -1180,6 +1263,8 @@
 		 */
 		attach: function(options)
 		{
+			options || (options = {});
+
 			// make sure we have an el
 			this._ensure_el();
 			
@@ -1189,7 +1274,7 @@
 				return false;
 			}
 
-			container.set('html', '');
+			if(options.clean_injection) container.set('html', '');
 			this.el.inject(container);
 		},
 		
@@ -1637,18 +1722,27 @@
 	Composer.eq	=	eq;
 
 
-	var exports	=	['Model', 'Collection', 'Controller'];
-	exports.each(function(name) {
-		var cls	=	eval(name);
-		cls._do_extend	=	function(obj, base)
-		{
-			var obj	=	Object.merge({Extends: (base || this.$constructor)}, obj);
-			var cls	=	new Class(obj);
-			return cls;
-		};
-		Composer[name]	=	cls;
-	}, this);
+	Composer._export	=	function(exports)
+	{
+		exports.each(function(name) {
+			var _do_try	=	function(classname) { return 'try{'+classname+'}catch(e){false}'; }
+			var cls	=	eval(_do_try(name)) || eval(_do_try('Composer.'+name));
+			if(!cls) return false;
 
+			cls._do_extend	=	function(obj, base)
+			{
+				var obj	=	Object.merge({Extends: (base || this.$constructor)}, obj);
+				var cls	=	new Class(obj);
+				return cls;
+			};
+			Composer[name]	=	cls;
+		}, this);
+	}.bind(this);
+
+	Composer._export(['Model', 'Collection', 'Controller']);
+
+	Composer.Base	=	Base;
 	Composer.Router	=	Router;
+
 	window.Composer	=	Composer;
 })();
