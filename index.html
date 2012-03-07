@@ -78,7 +78,7 @@
 				<li><a href="#api:collection:find_by_id">find_by_id</a></li>
 				<li><a href="#api:collection:find_by_cid">find_by_cid</a></li>
 				<li><a href="#api:collection:index_of">index_of</a></li>
-				<li><a href="#api:collection:query">query</a></li>
+				<li><a href="#api:collection:select">select</a></li>
 				<li><a href="#api:collection:first">first</a></li>
 				<li><a href="#api:collection:last">last</a></li>
 				<li><a href="#api:collection:url">url</a></li>
@@ -1072,7 +1072,7 @@ var office	= new CubicleFarm([employee1, employee2, employee3]);
 alert(office.index_of( 243641 ));	// returns 2
 alert(office.index_of( employee1 ));	// returns 0</pre>
 
-<h3 id="api:collection:query">Collection.query <small>collection.query(Mixed selector)</small></h3>
+<h3 id="api:collection:select">Collection.select <small>collection.select(Mixed selector)</small></h3>
 <p>
 	Queries the models in the collection with the criteria specified in <code>selector</code> and returns <em>all</em> that match.
 	<code>selector</code> can be either a callback function or a key-value object for matching.
@@ -1085,10 +1085,17 @@ alert(office.index_of( employee1 ));	// returns 0</pre>
 });</pre>
 <p>is the same as:</p>
 <pre>mycol.select({
-	name: andrew,
+	name: 'andrew',
 	age: 24
 });</pre>
 <p>In other words, it's a very simple version of MongoDB's selection syntax, but with a lot less functionality.</p>
+<p>
+Note: The object-based method of querying creates a pre-compiled function it does testing with instead of
+interpreting the query object for each loop. In other words, {name: 'andrew', age: 24} is converted to a function
+that's almost identical to first select() example above, and then that created function is used in the filtering
+process. This makes the speed difference between the function selection and the object selection almost the same,
+except for the time it takes to compile the created function.
+</p>
 
 <h3 id="api:collection:first">Collection.first <small>collection.first([Integer n])</small></h3>
 <p>
