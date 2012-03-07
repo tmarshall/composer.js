@@ -18,8 +18,9 @@
 		<li><a href="#overview"><strong>Composer.js</strong></a></li>
 		<li><a href="#overview:download">Download / Dependencies</a></li>
 		<li><a href="#overview:diff">Framework comparison</a></li>
-		<h2>API Documentation</h2>
+		<li><a href="#usage">Using the framework</a></li>
 		<li>
+			<h2>API Documentation</h2>
 			<a href="#api:events">Events</a>
 			<ul>
 				<li><a href="#api:events:bind">bind</a></li>
@@ -195,20 +196,21 @@
 		<td>
 			Supports passing a {silent: true} object to silence all events during an operation, but also supports
 			passing {not_silent: ['add', 'reset']} object to tell the framework "the only events that are allowed
-			to fire during this operation are 'add' and 'reset'"
+			to fire during this operation are 'add' and 'reset'." Also supports {silent: ['add']} to silence only
+			the 'add' event.
 		</td>
 	</tr>
 	<tr>
 		<td>Supporting libraries</td>
 		<td>
-			One-file library.
+			One-file library, supports additional modules.
 		</td>
 		<td>
 			Has multiple files dealing with different sets of functionality. Overall, has the most supporting
 			libraries and functions.
 		</td>
 		<td>
-			One-file library.
+			One-file library, supports additional modules.
 		</td>
 	</tr>
 	<tr>
@@ -229,9 +231,140 @@
 	frameworks.
 </p>
 
+
+<h1 id="usage">Using the framework / a note on implementation</h1>
+<p>
+	The main motivation behind Composer.js (and the frameworks Composer.js takes ideas from) is a separation
+	of your data and the display of the data. When implemented correctly, there are almost no instances where
+	you update the display of your data manually. Instead, you just change your data (aka
+	<a href="#api:model">model</a>), and your display (aka <a href="#api:controller">controller</a>) listens
+	for these changes and self-updates.
+</p>
+<p>
+	For example, a Controller in Composer.js is responsible for rendering HTML and communicating with its
+	model(s). Let's say the Controller renders the following html:
+</p>
+<pre>
+&lt;li class="user">
+	&lt;h2>Larry&lt;/h2>
+	&lt;span>Age: 23&lt;/span>
+&lt;/li>
+</pre>
+<p>
+	What if Larry changes his name? How do we display this? The best way, is to change the model that holds
+	Larry's data. For instance, we'll use <code><a href="#api:model:set">userModel.set({name: "Sally"})</a></code>
+	to change Larry's name to Sally.
+</p>
+<p>
+	Alone, this doesn't do anything but change the data in the model. However, The Controller that rendered
+	Sally's HTML in the first place can <a href="#api:events:bind">listen</a> to the <code>change</code>
+	event in the userModel object, and when fired, render the view again, showing Sally's new name.
+</p>
+<p>
+	Why not just call Controller.render()? Well, let's say Sally is displayed in the main user list, but also
+	in the <em>user of the week</em> list. Now you have to remember to call Controller.render() in two places.
+	Instantly not scalable. Instead, any controller that displays parts of a model's data can bind to any of
+	the model's <a href="#api:events">events</a> to update its display accordingly.
+</p>
+<p>
+	This is the Composer.js way. Separation of data and display. Change your data in one place, and all of your
+	HTML re-renders to reflect this change, almost automatically. If you use nothing else from the framework,
+	use this concept.
+</p>
+<h2>Example</h2>
+<p>
+	The following seems like a lot of code, but its usefulness comes into play when you have a lot of moving 
+	parts each showing different representations of the same data (happens a lot more than you'd think, even 
+	in simpler JS apps).
+</p>
+<p>
+	This example shows usage of properly using <a href="#api:events">events</a> to bind a controller function
+	to a model's data changing, but also <a href="#api:controller:events">controller events</a> (for running 
+	a controller function when a JS event fires). These are the main building blocks of a data-driven, 
+	event-based JS app, which is what we're all about!
+</p>
+<pre class="runnable">/* Create a new model class for our user type. */
+var User = Composer.Model.extend();
+
+/* Create a controller class for handling the display of a user model */
+var UserDisplay = Composer.Controller.extend({
+	inject: '#intro_example ul',
+	tag: 'li',
+
+	model: null,	// set on instantiation
+
+	init: function()
+	{
+		// here's where the magic happens. every time the model changes, we render our view again.
+		this.model.bind('change', this.render.bind(this));
+
+		// show the initial view
+		this.render();
+	},
+
+	render: function()
+	{
+		var data = this.model.toJSON();
+		this.html('&lt;span>'+data.name+'&lt;/span>');
+		return this;
+	}
+});
+
+/* Create a controller class for handling the updating of a user's name */
+var UserUpdate = Composer.Controller.extend({
+	el: '#intro_example .edit',
+
+	events: {
+		'submit form': 'user_edit'
+	},
+
+	elements: {
+		'form input[type=text]': 'inp_name'
+	},
+
+	model: null,	// set on instantiation
+
+	init: function()
+	{
+		// show the edit form
+		this.render();
+	},
+
+	render: function()
+	{
+		// render the form HTML
+		this.html('&lt;form>&lt;input type="text" name="name" value="'+ this.model.get('name') +'" />&lt;input type="submit" />&lt;/form>');
+		return this;
+	},
+
+	user_edit: function(e)
+	{
+		if(e) e.stop();
+		var newname = this.inp_name.value;
+
+		// note we don't do anything besides set the new name into the model
+		this.model.set({name: newname});
+	}
+});
+
+var larry = new User({name: 'Larry'});
+new UserDisplay({model: new User({name: 'Dick Luvr'})});
+new UserDisplay({model: larry});
+new UserDisplay({model: new User({name: 'Fisty McButte'})});
+
+// init the user editor for "larry"
+new UserUpdate({model: larry});</pre>
+<div id="intro_example" class="example">
+	<strong>Users:</strong>
+	<ul></ul>
+	<strong>Update user:</strong>
+	<div class="edit"></div>
+</div>
+
+
 <h1>API Documentation</h1>
 
-<h2 id="api:events">Composer.Events</h2>
+<h2 id="api:events">Events</h2>
 <p>
 	Events are the main way different pieces of your application communicate with each other. Events are also
 	used by the framework itself to notify your application of changes to data or interfaces.
@@ -1666,7 +1799,8 @@ new Composer.Router(routes, {
 				var code = code.replace(/\&amp\;/g, '&');
 				button.innerHTML = 'Run Code';
 				button.addEvent('click', function(e) { eval(code); });
-				el.insertBefore(button);			
+				button.inject(el, 'after');
+				//el.insertBefore(button);
 			});
 			setup_router_demo();
 		});
