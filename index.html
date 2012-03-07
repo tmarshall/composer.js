@@ -140,7 +140,7 @@
 
 <h2 id="overview:download">Download / Dependencies</h2>
 
-<a class="download" href="composer.js">Download 0.7.0</a>
+<a class="download" href="composer.js">Download 0.7.1</a>
 <p>
 	Composer's only external dependency is <a href="http://mootools.net">MooTools 1.3+</a>. A good understanding of JavaScript and object oriented
 	programming methodology is recommended.
@@ -1042,10 +1042,19 @@ var perfect_laptop_exists = my_laptops.exists(function(model) {
 alert(perfect_laptop_exists);	// false
 </pre>
 
-<h3 id="api:collection:find_by_id">Collection.find_by_id <small>collection.find_by_id(Mixed id)</small></h3>
-<p>Convenience function to find a model by <code><a href="#api:model:id">id</a></code>.</p>
+<h3 id="api:collection:find_by_id">Collection.find_by_id <small>collection.find_by_id(Mixed id, [options])</small></h3>
+<p>
+Convenience function to find a model by <code><a href="#api:model:id">id</a></code> (or 
+<code><a href="#api:model:cid">cid</a></code> if <code>id</code> is not set). If options.strict is true,
+<code>cid</code> will <em>not</em> be searched, and only <code>id</code> will be compared to the passed id.
+</p>
+<p>
+If options.allow_cid is set to true, then even on <code><a href="#api:model:id">model.id()</a></code> returning false,
+<code><a href="#api:model:cid">model.cid()</a></code> can be used for comparison, which is useful if you don't know
+whether the id you're passing is an <code>id</code> or <code>cid</code>, but the model already has an assigned id.
+</p>
 
-<h3 id="api:collection:find_by_cid">Collection.find_by_cid <small>collection.find_by_id(Mixed cid)</small></h3>
+<h3 id="api:collection:find_by_cid">Collection.find_by_cid <small>collection.find_by_cid(Mixed cid)</small></h3>
 <p>Convenience function to find a model by <code><a href="#api:model:cid">cid</a></code>.</p>
 
 <h3 id="api:collection:index_of">Collection.index_of <small>collection.index_of(Mixed model_or_id)</small></h3>

@@ -991,11 +991,15 @@
 		/**
 		 * convenience function to find a model by id
 		 */
-		find_by_id: function(id, strict)
+		find_by_id: function(id, options)
 		{
-			strict	=	!!strict;
+			options || (options = {});
 			return this.find(function(model) {
-				if(model.id(strict) == id)
+				if(model.id(options.strict) == id)
+				{
+					return true;
+				}
+				if(options.allow_cid && model.cid() == id)
 				{
 					return true;
 				}
@@ -1476,6 +1480,12 @@
 					window.location	=	'/#!' + hash;
 				}
 
+				// SUCK ON THAT, HISTORY.JS!!!!
+				// NOTE: this fixes a hashchange double-firing in IE, which 
+				// causes some terrible, horrible, no-good, very bad issues in
+				// more complex controllers.
+				delete Element.NativeEvents.hashchange;
+
 				// set up the hashchange event
 				window.addEvent('hashchange', this.state_change.bind(this));
 
@@ -1586,11 +1596,12 @@
 			}
 			if(!route) return this.options.on_failure({url: url, route: false, handler_exists: false, action_exists: false});
 
-			var handler	=	route[0];
+			var obj	=	route[0];
 			var action	=	route[1];
-			if(!window[handler]) return this.options.on_failure({url: url, route: route, handler_exists: false, action_exists: false});
-
-			var obj		=	window[handler];
+			if (typeof(obj) != 'object') {
+			  if(!window[obj]) return this.options.on_failure({url: url, route: route, handler_exists: false, action_exists: false}); 
+			  var obj		=	window[obj];
+			}
 			if(!obj[action] || typeof(obj[action]) != 'function') return this.options.on_failure({url: url, route: route, handler_exists: true, action_exists: false});
 			var args	=	match;
 			args.shift();
@@ -1669,7 +1680,7 @@
 			// hopefully be that LAST event called for any <a> tag because it's
 			// so high up the DOM chain. this means if a composer event wants to
 			// override this action, it can just call event.stop().
-			document.body.addEvent('click:relay('+selector+')', function(e) {
+			$(document.body).addEvent('click:relay('+selector+')', function(e) {
 				var a	=	next_tag_up('a', e.target);
 				var curhost		=	new String(window.location).replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1');
 				var linkhost	=	a.href.match(/^[a-z]+:\/\//) ? a.href.replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1') : curhost;
