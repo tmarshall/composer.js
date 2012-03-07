@@ -1156,6 +1156,7 @@ people.fetch();</pre>
 </p>
 <pre class="runnable">var DemoController = Composer.Controller.extend({
 	el: "#controller_demo_1",
+	className: 'active',
 	
 	elements: {
 		'ul': 'my_list',
@@ -1163,9 +1164,9 @@ people.fetch();</pre>
 		'button': 'my_button'
 	},
 
-	className: 'active',
-	
-	events: { 'click button': 'button_press_func' },
+	events: {
+		'click button': 'button_press_func'
+	},
 	
 	init: function() {
 		this.my_text.destroy();
