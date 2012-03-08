@@ -26,9 +26,9 @@ table { border-collapse: collapse; border-spacing: 0; }
 /* */
 
 body {font-family: 'arial'; font-size: 13px; background: #ccc;}
-#container {width: 500px; margin: 0 auto; padding: 20px; background: #fff; border-radius: 5px; -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0; -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0; -o-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0; box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;}
+#container {width: 500px; margin: 0 auto 32px auto; padding: 20px; background: #fff; border-radius: 5px; -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0; -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0; -o-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0; box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;}
 
-h1 {font-size: 32px; margin: 0 0 16px 0;}
+h1 {font-size: 32px; margin: 0 0 16px 0; text-align: center;}
 
 form.add input[type=text] {width: 488px; font-size: 20px; padding: 5px;}
 form.add input[type=submit] {display: none;}
@@ -47,3 +47,5 @@ ul.todos li form.edit input[type=submit] {display: none;}
 
 .info .left {float: left;}
 .info .clear-complete {float: right;}
+
+footer {width: 400px; margin: 0 auto; text-align: center;}

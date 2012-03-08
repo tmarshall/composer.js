@@ -1,3 +1,24 @@
+/**
+ * Hi! This is a simple demo app to show off some of the features of Composer.js.
+ * Like other before us, we chose to do Todos because it has become the standard
+ * demo app for Javascript MVC frameworks. Yes, we're just sheep following the
+ * herd. No doubt within the next few weeks, some nerd will write a blog post
+ * about how Todo apps damage our culture and how we're terrible people for
+ * making one. Until then, enjoy, and if you have any questions about anything,
+ * refer to the framework documentation:
+ *
+ *   http://lyonbros.github.com/composer.js/
+ *
+ * Thanks for checking out Composer.js!
+ * 
+ * - The Lyon Bros.
+ *
+ * PS: This code is public domain.
+ */
+
+/**
+ * The todo model. Each instance of this class represents one todo
+ */
 var Todo = Composer.Model.extend({
 	defaults: {
 		name: '',
@@ -5,10 +26,17 @@ var Todo = Composer.Model.extend({
 	}
 });
 
+/**
+ * A collection that is used to hold any number of todo models.
+ */
 var TodosList = Composer.Collection.extend({
 	model: Todo
 });
 
+/**
+ * The controller responsible for displaying a todo. It also handles editing and
+ * marking a todo as complete.
+ */
 var TodoDisplay = Composer.Controller.extend({
 	inject: 'ul.todos',
 	tag: 'li',
@@ -44,6 +72,8 @@ var TodoDisplay = Composer.Controller.extend({
 
 	render: function()
 	{
+		// render the HTML for the todo. Note that we are doing it by hand, but
+		// you are welcome to use a templating engine if it pleases you.
 		this.html(
 			'<input type="checkbox" '+ (this.model.get('complete', false) ? 'checked' : '') +'/>'+
 			'<h3>'+this.model.get('name')+'</h3>'+
@@ -56,9 +86,10 @@ var TodoDisplay = Composer.Controller.extend({
 			'</div>'
 		);
 
+		// switch off the edit form
 		this.edit_form.setStyle('display', 'none');
 
-		// set the proper class
+		// set the proper top-level class
 		if(this.model.get('complete', false))
 		{
 			this.el.addClass('complete');
@@ -72,6 +103,8 @@ var TodoDisplay = Composer.Controller.extend({
 	edit_todo: function(e)
 	{
 		if(e) e.stop();
+
+		// hide title, display edit form
 		this.edit_form.setStyle('display', 'block');
 		this.title.setStyle('display', 'none');
 		this.inp_edit_name.focus();
@@ -81,7 +114,6 @@ var TodoDisplay = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 		var name	=	this.inp_edit_name.value;
-
 		if(name == this.model.get('name'))
 		{
 			// the new name is the same as the name, switch the form out for the
@@ -110,13 +142,20 @@ var TodoDisplay = Composer.Controller.extend({
 	{
 		if(e) e.stop();
 
+		// this, among other things, triggers the model's "destroy" event, which
+		// the controller binds to in init().
 		this.model.destroy();
 	}
 });
 
+/**
+ * Loads and runs the Todo application. In most sufficiently complicated apps,
+ * the top-level object most likely won't need to be a Controller, but in this
+ * specific case it makes sense because the app fits nicely into the mold of
+ * needing a controller.
+ */
 var TodoApp = Composer.Controller.extend({
-	inject: '#container',
-	className: 'app',
+	el: '#container .app',
 
 	events: {
 		'submit form': 'add_todo',
@@ -134,14 +173,19 @@ var TodoApp = Composer.Controller.extend({
 
 	init: function()
 	{
+		// instantiate our list of todos and bind our needed events to it
 		this.todos	=	new TodosList();
 		this.todos.bind('add', this.do_add.bind(this));
-		this.todos.bind('all', this.update_info.bind(this));
+		this.todos.bind('all', this.update_info.bind(this));	// call update_info whenever anything happens in the collection
+
+		// render the app
 		this.render();
 	},
 
 	render: function()
 	{
+		// create the main HTML for the app and set it into this.el (the same
+		// as "#container .app")
 		this.html(
 			'<form class="add">'+
 			'	<input type="text" name="name" placeholder="What do you have to do?" />'+
@@ -153,8 +197,10 @@ var TodoApp = Composer.Controller.extend({
 			'	<button class="clear-complete">Clear Completed</button>'+
 			'</div>'
 		);
+
+		// manually update the info display
 		this.update_info();
-		console.log(this.clear_complete);
+
 		return this;
 	},
 
@@ -177,6 +223,9 @@ var TodoApp = Composer.Controller.extend({
 
 	do_add: function(todo)
 	{
+		// create a new TodoDisplay Controller to show the todo we just created.
+		// it will insert itself into the <ul> list automatically when it's 
+		// instantiated.
 		var displayTodo	=	new TodoDisplay({model: todo});
 	},
 
@@ -190,9 +239,12 @@ var TodoApp = Composer.Controller.extend({
 
 	update_info: function()
 	{
+		// update our "X items left..." text
 		var num_left	=	this.todos.select({complete: false}).length;
 		this.num_left.set('html', '<strong>'+num_left+'</strong> items in your list.');
 
+		// show or hide the "Clear completed" button based on whether any todos
+		// are marked as complete or not.
 		var num_complete	=	this.todos.select({complete: true}).length;
 		if(num_complete > 0)
 		{
