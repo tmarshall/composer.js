@@ -18,8 +18,9 @@
 		<li><a href="#overview"><strong>Composer.js</strong></a></li>
 		<li><a href="#overview:download">Download / Dependencies</a></li>
 		<li><a href="#overview:diff">Framework comparison</a></li>
-		<h2>API Documentation</h2>
+		<li><a href="#usage">Using the framework</a></li>
 		<li>
+			<h2>API Documentation</h2>
 			<a href="#api:events">Events</a>
 			<ul>
 				<li><a href="#api:events:bind">bind</a></li>
@@ -79,7 +80,7 @@
 				<li><a href="#api:collection:find_by_id">find_by_id</a></li>
 				<li><a href="#api:collection:find_by_cid">find_by_cid</a></li>
 				<li><a href="#api:collection:index_of">index_of</a></li>
-				<li><a href="#api:collection:query">query</a></li>
+				<li><a href="#api:collection:select">select</a></li>
 				<li><a href="#api:collection:first">first</a></li>
 				<li><a href="#api:collection:last">last</a></li>
 				<li><a href="#api:collection:url">url</a></li>
@@ -141,10 +142,16 @@
 
 <h2 id="overview:download">Download / Dependencies</h2>
 
-<a class="download" href="composer.js">Download 0.5.9</a>
+<a class="download" href="composer.js">Download 0.7.1</a>
 <p>
 	Composer's only external dependency is <a href="http://mootools.net">MooTools 1.3+</a>. A good understanding of JavaScript and object oriented
 	programming methodology is recommended.
+</p>
+
+<h2 id="overview:todo">TODO App</h2>
+<p>
+	<a href="./todos"><img src="./todos/screenshot.png" width="569" height="307" alt="todo" /></a><br/>
+	Everyone else has one, so here's <a href="./todos">our totally gnar TODO app</a>!
 </p>
 
 <h2 id="overview:diff">Framework comparison</h2>
@@ -196,20 +203,21 @@
 		<td>
 			Supports passing a {silent: true} object to silence all events during an operation, but also supports
 			passing {not_silent: ['add', 'reset']} object to tell the framework "the only events that are allowed
-			to fire during this operation are 'add' and 'reset'"
+			to fire during this operation are 'add' and 'reset'." Also supports {silent: ['add']} to silence only
+			the 'add' event.
 		</td>
 	</tr>
 	<tr>
 		<td>Supporting libraries</td>
 		<td>
-			One-file library.
+			One-file library, supports additional modules.
 		</td>
 		<td>
 			Has multiple files dealing with different sets of functionality. Overall, has the most supporting
 			libraries and functions.
 		</td>
 		<td>
-			One-file library.
+			One-file library, supports additional modules.
 		</td>
 	</tr>
 	<tr>
@@ -230,9 +238,140 @@
 	frameworks.
 </p>
 
+
+<h1 id="usage">Using the framework / a note on implementation</h1>
+<p>
+	The main motivation behind Composer.js (and the frameworks Composer.js takes ideas from) is a separation
+	of your data and the display of the data. When implemented correctly, there are almost no instances where
+	you update the display of your data manually. Instead, you just change your data (aka
+	<a href="#api:model">model</a>), and your display (aka <a href="#api:controller">controller</a>) listens
+	for these changes and self-updates.
+</p>
+<p>
+	For example, a Controller in Composer.js is responsible for rendering HTML and communicating with its
+	model(s). Let's say the Controller renders the following html:
+</p>
+<pre>
+&lt;li class="user">
+	&lt;h2>Larry&lt;/h2>
+	&lt;span>Age: 23&lt;/span>
+&lt;/li>
+</pre>
+<p>
+	What if Larry changes his name? How do we display this? The best way, is to change the model that holds
+	Larry's data. For instance, we'll use <code><a href="#api:model:set">userModel.set({name: "Sally"})</a></code>
+	to change Larry's name to Sally.
+</p>
+<p>
+	Alone, this doesn't do anything but change the data in the model. However, The Controller that rendered
+	Sally's HTML in the first place can <a href="#api:events:bind">listen</a> to the <code>change</code>
+	event in the userModel object, and when fired, render the view again, showing Sally's new name.
+</p>
+<p>
+	Why not just call Controller.render()? Well, let's say Sally is displayed in the main user list, but also
+	in the <em>user of the week</em> list. Now you have to remember to call Controller.render() in two places.
+	Instantly not scalable. Instead, any controller that displays parts of a model's data can bind to any of
+	the model's <a href="#api:events">events</a> to update its display accordingly.
+</p>
+<p>
+	This is the Composer.js way. Separation of data and display. Change your data in one place, and all of your
+	HTML re-renders to reflect this change, almost automatically. If you use nothing else from the framework,
+	use this concept.
+</p>
+<h2>Example</h2>
+<p>
+	The following seems like a lot of code, but its usefulness comes into play when you have a lot of moving 
+	parts each showing different representations of the same data (happens a lot more than you'd think, even 
+	in simpler JS apps).
+</p>
+<p>
+	This example shows usage of properly using <a href="#api:events">events</a> to bind a controller function
+	to a model's data changing, but also <a href="#api:controller:events">controller events</a> (for running 
+	a controller function when a JS event fires). These are the main building blocks of a data-driven, 
+	event-based JS app, which is what we're all about!
+</p>
+<pre class="runnable">/* Create a new model class for our user type. */
+var User = Composer.Model.extend();
+
+/* Create a controller class for handling the display of a user model */
+var UserDisplay = Composer.Controller.extend({
+	inject: '#intro_example ul',
+	tag: 'li',
+
+	model: null,	// set on instantiation
+
+	init: function()
+	{
+		// here's where the magic happens. every time the model changes, we render our view again.
+		this.model.bind('change', this.render.bind(this));
+
+		// show the initial view
+		this.render();
+	},
+
+	render: function()
+	{
+		var data = this.model.toJSON();
+		this.html('&lt;span>'+data.name+'&lt;/span>');
+		return this;
+	}
+});
+
+/* Create a controller class for handling the updating of a user's name */
+var UserUpdate = Composer.Controller.extend({
+	el: '#intro_example .edit',
+
+	events: {
+		'submit form': 'user_edit'
+	},
+
+	elements: {
+		'form input[type=text]': 'inp_name'
+	},
+
+	model: null,	// set on instantiation
+
+	init: function()
+	{
+		// show the edit form
+		this.render();
+	},
+
+	render: function()
+	{
+		// render the form HTML
+		this.html('&lt;form>&lt;input type="text" name="name" value="'+ this.model.get('name') +'" />&lt;input type="submit" />&lt;/form>');
+		return this;
+	},
+
+	user_edit: function(e)
+	{
+		if(e) e.stop();
+		var newname = this.inp_name.value;
+
+		// note we don't do anything besides set the new name into the model
+		this.model.set({name: newname});
+	}
+});
+
+var larry = new User({name: 'Larry'});
+new UserDisplay({model: new User({name: 'Dick Luvr'})});
+new UserDisplay({model: larry});
+new UserDisplay({model: new User({name: 'Fisty McButte'})});
+
+// init the user editor for "larry"
+new UserUpdate({model: larry});</pre>
+<div id="intro_example" class="example">
+	<strong>Users:</strong>
+	<ul></ul>
+	<strong>Update user:</strong>
+	<div class="edit"></div>
+</div>
+
+
 <h1>API Documentation</h1>
 
-<h2 id="api:events">Composer.Events</h2>
+<h2 id="api:events">Events</h2>
 <p>
 	Events are the main way different pieces of your application communicate with each other. Events are also
 	used by the framework itself to notify your application of changes to data or interfaces.
@@ -1060,10 +1199,19 @@ var perfect_laptop_exists = my_laptops.exists(function(model) {
 alert(perfect_laptop_exists);	// false
 </pre>
 
-<h3 id="api:collection:find_by_id">Collection.find_by_id <small>collection.find_by_id(Mixed id)</small></h3>
-<p>Convenience function to find a model by <code><a href="#api:model:id">id</a></code>.</p>
+<h3 id="api:collection:find_by_id">Collection.find_by_id <small>collection.find_by_id(Mixed id, [options])</small></h3>
+<p>
+Convenience function to find a model by <code><a href="#api:model:id">id</a></code> (or 
+<code><a href="#api:model:cid">cid</a></code> if <code>id</code> is not set). If options.strict is true,
+<code>cid</code> will <em>not</em> be searched, and only <code>id</code> will be compared to the passed id.
+</p>
+<p>
+If options.allow_cid is set to true, then even on <code><a href="#api:model:id">model.id()</a></code> returning false,
+<code><a href="#api:model:cid">model.cid()</a></code> can be used for comparison, which is useful if you don't know
+whether the id you're passing is an <code>id</code> or <code>cid</code>, but the model already has an assigned id.
+</p>
 
-<h3 id="api:collection:find_by_cid">Collection.find_by_cid <small>collection.find_by_id(Mixed cid)</small></h3>
+<h3 id="api:collection:find_by_cid">Collection.find_by_cid <small>collection.find_by_cid(Mixed cid)</small></h3>
 <p>Convenience function to find a model by <code><a href="#api:model:cid">cid</a></code>.</p>
 
 <h3 id="api:collection:index_of">Collection.index_of <small>collection.index_of(Mixed model_or_id)</small></h3>
@@ -1081,7 +1229,7 @@ var office	= new CubicleFarm([employee1, employee2, employee3]);
 alert(office.index_of( 243641 ));	// returns 2
 alert(office.index_of( employee1 ));	// returns 0</pre>
 
-<h3 id="api:collection:query">Collection.query <small>collection.query(Mixed selector)</small></h3>
+<h3 id="api:collection:select">Collection.select <small>collection.select(Mixed selector)</small></h3>
 <p>
 	Queries the models in the collection with the criteria specified in <code>selector</code> and returns <em>all</em> that match.
 	<code>selector</code> can be either a callback function or a key-value object for matching.
@@ -1094,10 +1242,17 @@ alert(office.index_of( employee1 ));	// returns 0</pre>
 });</pre>
 <p>is the same as:</p>
 <pre>mycol.select({
-	name: andrew,
+	name: 'andrew',
 	age: 24
 });</pre>
 <p>In other words, it's a very simple version of MongoDB's selection syntax, but with a lot less functionality.</p>
+<p>
+Note: The object-based method of querying creates a pre-compiled function it does testing with instead of
+interpreting the query object for each loop. In other words, {name: 'andrew', age: 24} is converted to a function
+that's almost identical to first select() example above, and then that created function is used in the filtering
+process. This makes the speed difference between the function selection and the object selection almost the same,
+except for the time it takes to compile the created function.
+</p>
 
 <h3 id="api:collection:first">Collection.first <small>collection.first([Integer n])</small></h3>
 <p>
@@ -1158,6 +1313,7 @@ people.fetch();</pre>
 </p>
 <pre class="runnable">var DemoController = Composer.Controller.extend({
 	el: "#controller_demo_1",
+	className: 'active',
 	
 	elements: {
 		'ul': 'my_list',
@@ -1165,9 +1321,9 @@ people.fetch();</pre>
 		'button': 'my_button'
 	},
 
-	className: 'active',
-	
-	events: { 'click button': 'button_press_func' },
+	events: {
+		'click button': 'button_press_func'
+	},
 	
 	init: function() {
 		this.my_text.destroy();
@@ -1667,7 +1823,8 @@ new Composer.Router(routes, {
 				var code = code.replace(/\&amp\;/g, '&');
 				button.innerHTML = 'Run Code';
 				button.addEvent('click', function(e) { eval(code); });
-				el.insertBefore(button);			
+				button.inject(el, 'after');
+				//el.insertBefore(button);
 			});
 			setup_router_demo();
 		});

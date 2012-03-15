@@ -1133,6 +1133,16 @@
 		},
 
 		/**
+		 * returns the model at the specified index. if there is no model there,
+		 * return false
+		 */
+		at: function(n)
+		{
+			var model	=	this._models[n];
+			return (model || false);
+		},
+
+		/**
 		 * sync the collection with the server.
 		 */
 		fetch: function(options)
