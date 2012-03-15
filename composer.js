@@ -82,21 +82,31 @@
 		 * Whenever mymodel is changed in any way, the "render" function for the 
 		 * current object (probably a controller in this instance) will be called.
 		 */
-		bind: function(name, callback, callback_name)
+		bind: function(ev, callback, callback_name)
 		{
+			if(typeof(ev) == 'object' && ev.length)
+			{
+				// it's an array, process each binding separately
+				return ev.each(function(evname) {
+					this.bind(evname, callback, callback_name);
+				}, this);
+			}
 			callback_name || (callback_name = null);
 
 			if(callback_name && !this._named_events[callback_name])
 			{
+				// prepend event type to callback name
+				callback_name	=	ev+':'+callback_name;
+
 				// assign the callback into the named collection so it can be retrieved
 				// later by name if required.
 				this._named_events[callback_name]	=	callback;
 			}
 
-			this._events[name] || (this._events[name] = []);
-			if(!this._events[name].contains(callback))
+			this._events[ev] || (this._events[ev] = []);
+			if(!this._events[ev].contains(callback))
 			{
-				this._events[name].push(callback);
+				this._events[ev].push(callback);
 			}
 
 			return this;
@@ -120,7 +130,7 @@
 			var args	=	shallow_array_clone(Array.from(arguments));
 			[ev, 'all'].each(function(type) {
 				if(!this._events[type]) return;
-				this._events[type].each(function(callback) {
+				Array.clone(this._events[type]).each(function(callback) {
 					callback.apply(this, (type == 'all') ? args : args.slice(1));
 				}, this);
 			}, this);
@@ -133,6 +143,14 @@
 		 */
 		unbind: function(ev, callback)
 		{
+			if(typeof(ev) == 'object' && ev.length)
+			{
+				// it's an array, process each item individually
+				return ev.each(function(evname) {
+					this.unbind(evname, callback);
+				}, this);
+			}
+
 			if(typeof(ev) == 'undefined')
 			{
 				// no event passed, unbind everything
@@ -150,7 +168,8 @@
 			{
 				// load the function we assigned the name to and assign it to "callback",
 				// also removing the named reference after we're done.
-				var fn	=	this._named_events[callback];
+				callback	=	ev+':'+callback;
+				var fn		=	this._named_events[callback];
 				delete this._named_events[callback];
 				var callback	=	fn;
 			}
@@ -169,48 +188,6 @@
 	 * provides some nice common functionality.
 	 */
 	var Base	=	new Class({
-		/**
-		 * allows one object to extend another. since controllers, models, and
-		 * collections all do this differently, it is up to each to have their own 
-		 * extend function and call this one for validation.
-		 */
-		extend: function(obj, base)
-		{
-			obj || (obj = {});
-			base || (base = null);
-			if(obj.initialize)
-			{
-				var str	=	'You are creating a Composer object with an "initialize" method/' +
-							'parameter, which is reserved. Unless you know what you\'re doing ' +
-							'(and call this.parent.apply(this, arguments)), please rename ' +
-							'your parameter to something other than "initialize"! Perhaps you' +
-							'were thinking of init()?';
-				console.log('----------WARNING----------');
-				console.log(str);
-				console.log('---------------------------');
-			}
-
-			if(obj.extend)
-			{
-				var str	=	'You are creating a Composer object with an "extend" method/' +
-							'parameter, which is reserved. Unless you know what you\'re doing ' +
-							'(and call this.parent.apply(this, arguments)), please rename ' +
-							'your parameter to something other than "extend"!';
-				console.log('----------WARNING----------');
-				console.log(str);
-				console.log('---------------------------');
-			}
-
-			return obj;
-		},
-
-		_do_extend: function(obj, base)
-		{
-			var obj	=	Object.merge({Extends: (base || this.$constructor)}, obj);
-			var cls	=	new Class(obj);
-			return cls;
-		},
-
 		/**
 		 * fire_event dtermines whether or not an event should fire. given an event
 		 * name, the passed-in options, and any arbitrary number of arguments, 
@@ -232,16 +209,61 @@
 				return this.trigger.apply(this, args);
 			}
 			else if(
-				options.not_silent == evname ||
-				(options.not_silent && options.not_silent.length && options.not_silent.contains(evname))
+				options.not_silent &&
+				(options.not_silent == evname ||
+				 (options.not_silent.contains && options.not_silent.contains(evname)))
 			)
 			{
 				// silent, BUT the given event is allowed. fire it.
 				return this.trigger.apply(this, args);
 			}
+			else if(
+				options.silent && 
+				((typeof(options.silent) == 'string' && options.silent != evname) ||
+				 (options.silent.contains && !options.silent.contains(evname)))
+			)
+			{
+				// the current event is not marked to be silent, fire it
+				return this.trigger.apply(this, args);
+			}
 			return this;
 		}
 	});
+	/**
+	 * allows one object to extend another. since controllers, models, and
+	 * collections all do this differently, it is up to each to have their own 
+	 * extend function and call this one for validation.
+	 */
+	Base.extend	=	function(obj, base)
+	{
+		obj || (obj = {});
+		base || (base = null);
+		if(obj.initialize)
+		{
+			var str	=	'You are creating a Composer object with an "initialize" method/' +
+						'parameter, which is reserved. Unless you know what you\'re doing ' +
+						'(and call this.parent.apply(this, arguments)), please rename ' +
+						'your parameter to something other than "initialize"! Perhaps you' +
+						'were thinking of init()?';
+			console.log('----------WARNING----------');
+			console.log(str);
+			console.log('---------------------------');
+		}
+
+		if(obj.extend)
+		{
+			var str	=	'You are creating a Composer object with an "extend" method/' +
+						'parameter, which is reserved. Unless you know what you\'re doing ' +
+						'(and call this.parent.apply(this, arguments)), please rename ' +
+						'your parameter to something other than "extend"!';
+			console.log('----------WARNING----------');
+			console.log(str);
+			console.log('---------------------------');
+		}
+
+		return obj;
+	};
+
 
 	/**
 	 * Models are the data class. They deal with loading and manipulating data from
@@ -297,7 +319,7 @@
 			data || (data = {});
 
 			// merge the defaults into the data
-			data	=	Object.merge(Object.clone(this.defaults), data);
+			data	=	Object.merge({}, Object.clone(this.defaults), data);
 
 			// assign the unique app id
 			this._cid	=	Composer.cid();
@@ -307,14 +329,6 @@
 
 			// call the init fn
 			this.init(options);
-		},
-
-		extend: function(obj, base)
-		{
-			obj || (obj = {});
-			base || (base = Model);
-			obj	=	this.parent.call(this, obj, base);
-			return this._do_extend(obj, base);
 		},
 
 		/**
@@ -426,6 +440,7 @@
 			this.fire_event('change:'+key, options, this, void 0, options);
 			this.fire_event('change', options, this, options);
 			this._changed	=	false;
+			return this;
 		},
 
 		/**
@@ -638,6 +653,14 @@
 
 		}
 	});
+	Model.extend	=	function(obj, base)
+	{
+		obj || (obj = {});
+		base || (base = Model);
+		obj	=	Base.extend.call(this, obj, base);
+		return this._do_extend(obj, base);
+	};
+
 
 	/**
 	 * Collections hold lists of models and contain various helper functions for
@@ -700,14 +723,6 @@
 			this.init();
 		},
 
-		extend: function(obj, base)
-		{
-			obj || (obj = {});
-			base || (base = Collection);
-			obj	=	this.parent.call(this, obj, base);
-			return this._do_extend(obj, base);
-		},
-
 		/**
 		 * override me
 		 */
@@ -745,7 +760,7 @@
 			options || (options = {});
 
 			// if we are passing raw data, create a new model from data
-			var model		=	data.__is_model ? data : new this.model(data, options);
+			var model	=	data.__is_model ? data : new this.model(data, options);
 			
 			// reference this collection to the model
 			if(!model.collections.contains(this))
@@ -772,6 +787,8 @@
 			model.bind('all', this._model_event.bind(this));
 
 			this.fire_event('add', options, model, this, options);
+
+			return model;
 		},
 
 		/**
@@ -803,6 +820,37 @@
 
 			// remove the model from the collection
 			this._remove_reference(model);
+		},
+
+		/**
+		 * given a model, check if its ID is already in this collection. if so,
+		 * replace is with the given model, otherwise add the model to the collection.
+		 */
+		upsert: function(model, options)
+		{
+			options || (options = {});
+
+			var existing	=	this.find_by_id(model.id());
+			if(existing)
+			{
+				// reposition the model if necessary
+				var existing_idx	=	this.index_of(existing);
+				if(typeof(options.at) == 'number' && existing_idx != options.at)
+				{
+					this._models.splice(existing_idx, 1);
+					this._models.splice(options.at, 0, existing);
+					this.fire_event('sort', options);
+				}
+
+				// replace the data in the existing model with the new model's
+				existing.set(model.toJSON(), Object.merge({}, options, {silent: true, upsert: true}));
+
+				return existing;
+			}
+
+			// model is not in this collection, add it
+			this.add(model, options);
+			return model;
 		},
 
 		/**
@@ -841,13 +889,19 @@
 			}
 			this.add(data, options);
 
-			this.fire_event('reset', options);
+			this.fire_event('reset', options, options);
 		},
 
 		/**
 		 * not normally necessary to call this, unless collection.sortfn changes after
 		 * instantiation of the data. sort order is normall maintained upon adding of
 		 * data viw Collection.add().
+		 *
+		 * However, since the sorting criteria for the models can be modified manually
+		 * and it's not always desired to sort automatically, you can call this method
+		 * to re-sort the data in the collection via the bubble-up eventing:
+		 *
+		 * mycollection.bind('change:sort_order', mycollection.sort.bind(mycollection))
 		 */
 		sort: function(options)
 		{
@@ -899,6 +953,21 @@
 		},
 
 		/**
+		 * convenience function to execute a function on a collection's models
+		 */
+		map: function(cb, bind)
+		{
+			if(bind)
+			{
+				return this.models().map(cb, bind);
+			}
+			else
+			{
+				return this.models().map(cb);
+			}
+		},
+
+		/**
 		 * Find the first model that satisfies the callback. An optional sort function
 		 * can be passed in to order the results of the find, which uses the usual 
 		 * fn(a,b){return (-1|0|1);} syntax.
@@ -937,10 +1006,15 @@
 		/**
 		 * convenience function to find a model by id
 		 */
-		find_by_id: function(id)
+		find_by_id: function(id, options)
 		{
+			options || (options = {});
 			return this.find(function(model) {
-				if(model.id() == id)
+				if(model.id(options.strict) == id)
+				{
+					return true;
+				}
+				if(options.allow_cid && model.cid() == id)
 				{
 					return true;
 				}
@@ -1006,12 +1080,26 @@
 				for(var key in selector)
 				{
 					var val	=	selector[key];
+					if(typeof(val) == 'string') val = '"'+val+'"';
 					qry.push('data.get("'+key+'") == ' + val);
 				}
 				var fnstr	=	'if(' + qry.join('&&') + ') { return true; }';
 				selector	=	new Function('data', fnstr);
 			}
 			return this._models.filter(selector);
+		},
+
+		/**
+		 *	Convenience functon to just select one model from a collection
+		 */
+		select_one: function(selector)
+		{
+			var result = this.select(selector);
+
+			if (result.length)
+				return result[0];
+			
+			return null;
 		},
 
 		/**
@@ -1031,7 +1119,17 @@
 		last: function(n)
 		{
 			var models	=	this.models();
-			return (typeof(n) != 'undefined' && parseInt(n) != 0) ? models.slice(models.length - n) : models[0];
+			return (typeof(n) != 'undefined' && parseInt(n) != 0) ? models.slice(models.length - n) : models[models.length - 1];
+		},
+
+		/**
+		 * returns the model at the specified index. if there is no model there,
+		 * return false
+		 */
+		at: function(n)
+		{
+			var model	=	this._models[n];
+			return (model || false);
 		},
 
 		/**
@@ -1083,6 +1181,14 @@
 			this.trigger.apply(this, arguments);
 		}
 	});
+	Collection.extend	=	function(obj, base)
+	{
+		obj || (obj = {});
+		base || (base = Collection);
+		obj	=	Base.extend.call(this, obj, base);
+		return this._do_extend(obj, base);
+	};
+
 
 	/**
 	 * The controller class sits between views and your models/collections. 
@@ -1118,8 +1224,10 @@
 		 * CTOR. instantiate main container element (this.el), setup events and
 		 * elements, and call init()
 		 */
-		initialize: function(params)
+		initialize: function(params, options)
 		{
+			options || (options = {});
+
 			for(x in params)
 			{
 				this[x]	=	params[x];
@@ -1130,7 +1238,7 @@
 			
 			if(this.inject)
 			{
-				this.attach();
+				this.attach(options);
 			}
 			
 			if(this.className)
@@ -1142,19 +1250,6 @@
 			this.delegate_events();
 
 			this.init();
-		},
-
-		extend: function(obj, base)
-		{
-			obj || (obj = {});
-			base || (base = Controller);
-			obj	=	this.parent.call(this, obj, base);
-
-			// extend the base object's events and elements
-			obj.events		=	Object.merge(this.events || {}, obj.events);
-			obj.elements	=	Object.merge(this.elements || {}, obj.elements);
-
-			return this._do_extend(obj, base);
 		},
 
 		/**
@@ -1187,6 +1282,8 @@
 		 */
 		attach: function(options)
 		{
+			options || (options = {});
+
 			// make sure we have an el
 			this._ensure_el();
 			
@@ -1196,7 +1293,7 @@
 				return false;
 			}
 
-			container.set('html', '');
+			if(options.clean_injection) container.set('html', '');
 			this.el.inject(container);
 		},
 		
@@ -1304,6 +1401,327 @@
 			}
 		}
 	});
+	Controller.extend	=	function(obj, base)
+	{
+		obj || (obj = {});
+		base || (base = Controller);
+		obj	=	Base.extend.call(this, obj, base);
+
+		// have to do some annoying trickery here to get the actual events/elements
+		var base_events		=	base.events || {};
+		var base_elements	=	base.elements || {};
+
+		// extend the base object's events and elements
+		// NOTE: the first {} in the object is there because the merge is destructive
+		//       to the first argument (we don't want that).
+		obj.events		=	Object.merge({}, base_events, obj.events);
+		obj.elements	=	Object.merge({}, base_elements, obj.elements);
+
+		var cls			=	this._do_extend(obj, base);
+		cls.events		=	obj.events;
+		cls.elements	=	obj.elements;
+		return cls;
+	};
+
+
+	/**
+	 * The Router class is a utility that helps in the routing of requests to
+	 * certain parts of your application. It works either by history.pushState
+	 * (which is highly recommended) or by falling back onto hashbang url 
+	 * support (not recommended).
+	 *
+	 * Note that if you do want to use pushState, you have to include History.js
+	 * before instantiating the Router class:
+	 *
+	 *   https://github.com/balupton/History.js/
+	 */
+	var Router	=	new Class({
+		Implements: [Options],
+
+		last_path:	false,
+		routes:		{},
+		callbacks:	[],
+
+		options: {
+			redirect_initial: true,
+			suppress_initial_route: false,
+			enable_cb: function() { return true; },
+			on_failure: function() {},
+			hash_fallback: true
+		},
+
+		/**
+		 * initialize the routes your app uses. this is really the only public
+		 * function that exists in the router, since it takes care of everything for
+		 * you after instantiation.
+		 */
+		initialize: function(routes, options)
+		{
+			this.setOptions(options);
+
+			this.routes	=	routes;
+			this.register_callback(this._do_route.bind(this));
+
+			// in case History.js isn't loaded
+			if(!window.History) window.History = {enabled: false};
+
+			if(History.enabled)
+			{
+				// bind our pushstate event
+				History.Adapter.bind(window, 'statechange', this.state_change.bind(this));
+
+				if(!this.options.suppress_initial_route)
+				{
+					// run the initial route
+					History.Adapter.trigger(window, 'statechange', [window.location.pathname])
+				}
+			}
+			else if(this.options.hash_fallback)
+			{
+				// load the initial hash value
+				var hash	=	this.cur_path();
+				
+				// if redirect_initial is true, then whatever page a user lands on, redirect
+				// them to the hash version, ie
+				//
+				// gonorrhea.com/users/display/42
+				// becomes:
+				// gonorrhea.com/#!/users/display/42
+				//
+				// the routing system will pick this new hash up after the redirect and route
+				// it normally
+				if(this.options.redirect_initial && !(hash == '/' || hash == ''))
+				{
+					window.location	=	'/#!' + hash;
+				}
+
+				// SUCK ON THAT, HISTORY.JS!!!!
+				// NOTE: this fixes a hashchange double-firing in IE, which 
+				// causes some terrible, horrible, no-good, very bad issues in
+				// more complex controllers.
+				delete Element.NativeEvents.hashchange;
+
+				// set up the hashchange event
+				window.addEvent('hashchange', this.state_change.bind(this));
+
+				if(!this.options.suppress_initial_route)
+				{
+					// run the initial route
+					window.fireEvent('hashchange', [hash]);
+				}
+			}
+			else if(!this.options.suppress_initial_route)
+			{
+				this._do_route(new String(window.location.pathname).toString());
+			}
+		},
+
+		/**
+		 * run the given callback when a route changes
+		 */
+		register_callback: function(cb)
+		{
+			this.callbacks.push(cb);
+		},
+
+		/**
+		 * get the current url path
+		 */
+		cur_path: function()
+		{
+			if(!History.enabled)
+			{
+				return '/' + new String(window.location.hash).toString().replace(/^[#!\/]+/, '');
+			}
+			else
+			{
+				return new String(window.location.pathname).toString();
+			}
+		},
+
+		/**
+		 * wrapper around the routing functionality. basically, instead of doing a 
+		 *   window.location = '/my/route';
+		 * you can do
+		 *   router.route('/my/route');
+		 *
+		 * Note that the latter isn't necessary, but it provides a useful abstraction.
+		 */
+		route: function(url, options)
+		{
+			url || (url = this.cur_path());
+			options || (options = {});
+			options.state || (options.state = {});
+
+			var href	=	'/' + url.trim().replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+			var old		=	this.cur_path();
+			if(old == href)
+			{
+				if(History.enabled)
+				{
+					History.Adapter.trigger(window, 'statechange', [href, true]);
+				}
+				else if(this.options.hash_fallback)
+				{
+					window.fireEvent('hashchange', [href, true]);
+				}
+			}
+			else
+			{
+				if(History.enabled)
+				{
+					History.pushState(options.state, '', href);
+				}
+				else if(this.options.hash_fallback)
+				{
+					window.location	=	'/#!'+href;
+				}
+				else
+				{
+					window.location	=	href;
+				}
+			}
+		},
+
+		/**
+		 * given a url, route it within the given routes the router was instantiated
+		 * with. if none fit, do nothing =]
+		 *
+		 * *internal only* =]
+		 */
+		_do_route: function(url)
+		{
+			if(!this.options.enable_cb())
+			{
+				return false;
+			}
+
+			var url		=	'/' + url.replace(/^!?\//g, '');
+			var route	=	false;
+			var match	=	[];
+			for(var re in this.routes)
+			{
+				var regex	=	'/^' + re.replace(/\//g, '\\\/') + '$/';
+				match		=	eval(regex).exec(url);
+				if(match)
+				{
+					route	=	this.routes[re];
+					break;
+				}
+			}
+			if(!route) return this.options.on_failure({url: url, route: false, handler_exists: false, action_exists: false});
+
+			var obj	=	route[0];
+			var action	=	route[1];
+			if (typeof(obj) != 'object') {
+			  if(!window[obj]) return this.options.on_failure({url: url, route: route, handler_exists: false, action_exists: false}); 
+			  var obj		=	window[obj];
+			}
+			if(!obj[action] || typeof(obj[action]) != 'function') return this.options.on_failure({url: url, route: route, handler_exists: true, action_exists: false});
+			var args	=	match;
+			args.shift();
+			obj[action].apply(obj, args);
+		},
+
+		/**
+		 * stupid function, not worth the space it takes up. oh well.
+		 */
+		setup_routes: function(routes)
+		{
+			this.routes	=	routes;
+		},
+
+		/**
+		 * attached to the pushState event. runs all the callback assigned with
+		 * register_callback().
+		 */
+		state_change: function(path, force)
+		{
+			if(path && path.stop != undefined) path = false;
+			path || (path = this.cur_path());
+			force	=	!!force;
+
+			// remove the motherfucking ! at the beginning
+			if(this.last_path == path && !force)
+			{
+				// no need to reload
+				return false;
+			}
+			
+			this.last_path	=	path;
+			this.callbacks.each(function(fn) {
+				if(typeof(fn) == 'function') fn.call(this, path);
+			}, this);
+		},
+
+		/**
+		 * Bind the pushState to any links that don't have the options.exclude_class
+		 * className in them.
+		 */
+		bind_links: function(options)
+		{
+			options || (options = {});
+
+			// build a selector that work for YOU.
+			if(options.selector)
+			{
+				// specific selector......specified. use it.
+				var selector	=	options.selector;
+			}
+			else
+			{
+				// create a CUSTOM selector tailored to your INDIVIDUAL needs.
+				if(options.exclude_class)
+				{
+					// exclusion classname exists, make sure to not listen to <a>
+					// tags with that class
+					var selector	=	'a:not([class~="'+options.exclude_class+'"])';
+				}
+				else
+				{
+					// bind all <a>'s
+					var selector	=	'a';
+				}
+			}
+
+			// convenience function, recursively searches up the DOM tree until
+			// it finds an element with tagname ==  tag.
+			var next_tag_up = function(tag, element)
+			{
+				return element.get('tag') == tag ? element : next_tag_up(tag, element.getParent());
+			}
+
+			// bind our heroic pushState to the <a> tags we specified. this
+			// hopefully be that LAST event called for any <a> tag because it's
+			// so high up the DOM chain. this means if a composer event wants to
+			// override this action, it can just call event.stop().
+			$(document.body).addEvent('click:relay('+selector+')', function(e) {
+				var a	=	next_tag_up('a', e.target);
+				var curhost		=	new String(window.location).replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1');
+				var linkhost	=	a.href.match(/^[a-z]+:\/\//) ? a.href.replace(/[a-z]+:\/\/(.*?)\/.*/i, '$1') : curhost;
+				if(
+					curhost != linkhost ||
+					(typeof(options.do_state_change) == 'function' && !options.do_state_change(a))
+				)
+				{
+					return;
+				}
+
+				if(e) e.stop();
+
+				if(History.enabled)
+				{
+					var href	=	'/' + a.href.replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
+					History.pushState(options.global_state, '', href);
+					return false;
+				}
+				else
+				{
+					window.location	=	'/#!/'+a.href.replace(/^[a-z]+:\/\/.*?\//, '');
+				}
+			});
+		}
+	});
 
 	/*
 	---
@@ -1342,168 +1760,6 @@
 			}
 		}
 	};
-
-	var Router	=	new Class({
-		last_hash:	false,
-		routes:		{},
-		callbacks:	[],
-
-		options: {
-			redirect_initial: true,
-			suppress_initial_route: false,
-			enable_cb: function() { return true; },
-			on_failure: function() {}
-		},
-
-		/**
-		 * initialize the routes your app uses. this is really the only public
-		 * function that exists in the router, since it takes care of everything for
-		 * you after instantiation.
-		 */
-		initialize: function(routes, options)
-		{
-			for(x in options)
-			{
-				this.options[x]	=	options[x];
-			}
-
-			this.routes	=	routes;
-
-			this.register_callback(this._do_route.bind(this));
-
-			// load the initial hash value
-			var hash	=	self.location.hash;
-			var value	=	(hash.indexOf('#') == 0 ? hash.substr(1) : hash);
-			
-			// if redirect_initial is true, then whatever page a user lands on, redirect
-			// them to the hash version, ie
-			//
-			// gonorrhea.com/users/display/42
-			// becomes:
-			// gonorrhea.com/#!/users/display/42
-			//
-			// the routing system will pick this new hash up after the redirect and route
-			// it normally
-			if(this.options.redirect_initial && hash.trim() == '')
-			{
-				window.location	=	'/#!' + self.location.pathname;
-			}
-
-			// set up the hashchange event
-			window.addEvent('hashchange', this.hash_change.bind(this));
-
-			if(!this.options.suppress_initial_route)
-			{
-				// run the initial route
-				window.fireEvent('hashchange', [value]);
-			}
-		},
-
-		/**
-		 * run the given callback when a route changes
-		 */
-		register_callback: function(cb)
-		{
-			this.callbacks.push(cb);
-		},
-
-		/**
-		 * wrapper around the routing functionality. basically, instead of doing a 
-		 *   window.location = '#!/my/route';
-		 * you can do
-		 *   router.route('#!/my/route');
-		 *
-		 * Note that the latter isn't necessary, but it provides a useful abstraction.
-		 */
-		route: function(url)
-		{
-			url || (url = new String(window.location.href));
-
-			var href	=	url.trim();
-			href		=	'/' + href.replace(/^[a-z]+:\/\/.*?\//, '').replace(/^[#!\/]+/, '');
-			var hash	=	'#!' + href;
-
-			var old		=	new String(self.location.hash).toString();
-			if(old == hash)
-			{
-				window.fireEvent('hashchange', [href, true]);
-			}
-			else
-			{
-				window.location	=	hash;
-			}
-		},
-
-		/**
-		 * given a url, route it within the given routes the router was instantiated
-		 * with. if none fit, do nothing =]
-		 *
-		 * *internal only* =]
-		 */
-		_do_route: function(url)
-		{
-			if(!this.options.enable_cb())
-			{
-				return false;
-			}
-
-			var url		=	'/' + url.replace(/^!?\//g, '');
-			var route	=	false;
-			var match	=	[];
-			for(var re in this.routes)
-			{
-				var regex	=	'/^' + re.replace(/\//g, '\\\/') + '$/';
-				match		=	eval(regex).exec(url);
-				if(match)
-				{
-					route	=	this.routes[re];
-					break;
-				}
-			}
-			if(!route) return this.options.on_failure({url: url, route: false, handler_exists: false, action_exists: false});
-
-			var handler	=	route[0];
-			var action	=	route[1];
-			if(!window[handler]) return this.options.on_failure({url: url, route: route, handler_exists: false, action_exists: false});
-
-			var obj		=	window[handler];
-			if(!obj[action] || typeof(obj[action]) != 'function') return this.options.on_failure({url: url, route: route, handler_exists: true, action_exists: false});
-			var args	=	match;
-			args.shift();
-			obj[action].apply(obj, args);
-		},
-
-		/**
-		 * stupid function, not worth the space it takes up
-		 */
-		setup_routes: function(routes)
-		{
-			this.routes	=	routes;
-		},
-
-		/**
-		 * attached to the hashchange event. runs all the callback assigned with
-		 * register_callback().
-		 */
-		hash_change: function(hash, force)
-		{
-			var force	=	!!force;
-
-			// remove the motherfucking ! at the beginning
-			hash	=	hash.replace(/^!/, '');
-			if(this.last_hash == hash && !force)
-			{
-				// no need to reload
-				return false;
-			}
-			
-			this.last_hash	=	hash;
-			this.callbacks.each(function(fn) {
-				if(typeof(fn) == 'function') fn.call(this, hash);
-			}, this);
-		}
-	});
-
 
 	// wraps error callbacks for syncing functions
 	var wrap_error	=	function(callback, model, options)
@@ -1622,14 +1878,27 @@
 	Composer.eq	=	eq;
 
 
-	// list the items we're going to export with "extends" wrappers
-	var exports		=	['Model', 'Collection', 'Controller'];
+	Composer._export	=	function(exports)
+	{
+		exports.each(function(name) {
+			var _do_try	=	function(classname) { return 'try{'+classname+'}catch(e){false}'; }
+			var cls	=	eval(_do_try(name)) || eval(_do_try('Composer.'+name));
+			if(!cls) return false;
 
-	// run the exports
-	exports.each(function(name) {
-		var obj			=	eval('new '+name+'()');
-		Composer[name]	=	obj;
-	});
+			cls._do_extend	=	function(obj, base)
+			{
+				var obj	=	Object.merge({Extends: (base || this.$constructor)}, obj);
+				var cls	=	new Class(obj);
+				return cls;
+			};
+			Composer[name]	=	cls;
+		}, this);
+	}.bind(this);
+
+	Composer._export(['Model', 'Collection', 'Controller']);
+
+	Composer.Base	=	Base;
 	Composer.Router	=	Router;
+
 	window.Composer	=	Composer;
 })();

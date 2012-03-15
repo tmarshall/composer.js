@@ -73,6 +73,7 @@
 				<li><a href="#api:collection:sortfn">sortfn</a></li>
 				<li><a href="#api:collection:parse">parse</a></li>
 				<li><a href="#api:collection:each">each</a></li>
+				<li><a href="#api:collection:map">map</a></li>
 				<li><a href="#api:collection:find">find</a></li>
 				<li><a href="#api:collection:exists">exists</a></li>
 				<li><a href="#api:collection:find_by_id">find_by_id</a></li>
@@ -992,6 +993,23 @@ var my_dogs = new Dogs([
 my_dogs.each(function(model) {
 	alert(model.get('name') + ' weighs ' + model.get('weight') + ' pounds.');
 });</pre>
+
+<h3 id="api:collection:map">Collection.map <small>collection.map(function fn, [Object bind])</small></h3>
+<p>
+	A convenience function for executing a function on each of a collection's models and returning the results. You can optionally bind function <code>fn</code>'s scope to an object with the <code>bind</code> parameter.
+</p>
+<pre class="runnable">var Dogs = Composer.Collection.extend();
+
+var my_dogs = new Dogs([
+	{ name: "Toby",		weight: 60 },
+	{ name: "Ruby",		weight: 12 },
+	{ name: "Wookie",	weight: 20 }
+]);
+var results = my_dogs.map(function(model) {
+	return model.get('name') + ' weighs ' + model.get('weight') + ' pounds';
+});
+alert(results);
+</pre>
 
 <h3 id="api:collection:find">Collection.find <small>collection.find(function callback, [function sortfn])</small></h3>
 <p>
