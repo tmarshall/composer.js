@@ -141,7 +141,7 @@
 
 <h2 id="overview:download">Download / Dependencies</h2>
 
-<a class="download" href="composer.js">Download 0.7.1</a>
+<a class="download" href="composer.js">Download 0.7.2</a>
 <p>
 	Composer's only external dependency is <a href="http://mootools.net">MooTools 1.3+</a>. A good understanding of JavaScript and object oriented
 	programming methodology is recommended.
@@ -414,7 +414,7 @@ mynote.set({ text: 'my goat hurts' });</pre>
 <p>
 	Binds an event to object. The event under "event_name" can be an arbitrary string, or an event used by
 	Composer.js internally. You can optionally attach a name (callback_name) to the callback to make it easier
-	to unbind later on. More on this further down.
+	to unbind later on. More on this <a href="#named_events_note">further down</a>.
 </p>
 <p>
 	There are two special events to be aware of:
@@ -461,7 +461,7 @@ mymodel.unbind("change");		// Removes all "change" callbacks
 mymodel.unbind();			// Removes all callbacks on the object</pre>
 
 
-<p>
+<p id="named_events_note">
 	As previously mentioned, you can call <code><a href="#api:events:bind">Events.bind</a></code> with an optional
 	name parameter that allows you to attach a name to an event. This is useful in cases where you bind a function
 	but don't neccessarily have access to the function later on, so wouldn't be able to unbind it. Instead, you 
@@ -498,6 +498,16 @@ mymodel.unbind();			// Removes all callbacks on the object</pre>
 	<code>this.model.bind</code> as the last parameter. This was a common enough instance for us to justify 
 	building named callbacks into the Composer event system.
 </p>
+<p>
+	Please note that if you try to bind two events with the same event type/callback name, the bind() function
+	will throw a "CallbackNameExists" exception:
+</p>
+<pre>var MyModel = Composer.Model.extend({});
+var model = new MyModel();
+model.bind('change', function() {alert('changed');}, 'cb_name');
+model.bind('change', function() {alert('changed again!!');}, 'cb_name');	// <-- throws "CallbackNameExists" exception!
+model.bind('change:name', function() {alert('changed again!!');}, 'cb_name');	// <-- doesn't throw exception since event type ("change:name") is unbound to that event name
+</pre>
 
 <h3 id="api:events:trigger">Events.trigger <small>object.trigger(String event_name, [arg1, [arg2, ...]])</small></h3>
 <p>

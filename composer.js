@@ -93,14 +93,21 @@
 			}
 			callback_name || (callback_name = null);
 
-			if(callback_name && !this._named_events[callback_name])
+			if(callback_name)
 			{
 				// prepend event type to callback name
 				callback_name	=	ev+':'+callback_name;
 
-				// assign the callback into the named collection so it can be retrieved
-				// later by name if required.
-				this._named_events[callback_name]	=	callback;
+				if(!this._named_events[callback_name])
+				{
+					// assign the callback into the named collection so it can be retrieved
+					// later by name if required.
+					this._named_events[callback_name]	=	callback;
+				}
+				else
+				{
+					throw 'CallbackNameExists';
+				}
 			}
 
 			this._events[ev] || (this._events[ev] = []);
@@ -1104,7 +1111,7 @@
 		last: function(n)
 		{
 			var models	=	this.models();
-			return (typeof(n) != 'undefined' && parseInt(n) != 0) ? models.slice(models.length - n) : models[0];
+			return (typeof(n) != 'undefined' && parseInt(n) != 0) ? models.slice(models.length - n) : models[models.length - 1];
 		},
 
 		/**
