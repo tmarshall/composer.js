@@ -501,14 +501,8 @@ mymodel.unbind();			// Removes all callbacks on the object</pre>
 </p>
 <p>
 	Please note that if you try to bind two events with the same event type/callback name, the bind() function
-	will throw a "CallbackNameExists" exception:
+	will return false.
 </p>
-<pre>var MyModel = Composer.Model.extend({});
-var model = new MyModel();
-model.bind('change', function() {alert('changed');}, 'cb_name');
-model.bind('change', function() {alert('changed again!!');}, 'cb_name');	// <-- throws "CallbackNameExists" exception!
-model.bind('change:name', function() {alert('changed again!!');}, 'cb_name');	// <-- doesn't throw exception since event type ("change:name") is unbound to that event name
-</pre>
 
 <h3 id="api:events:trigger">Events.trigger <small>object.trigger(String event_name, [arg1, [arg2, ...]])</small></h3>
 <p>
