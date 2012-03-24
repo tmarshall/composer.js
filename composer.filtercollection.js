@@ -28,7 +28,6 @@
 	 */
 	var FilterCollection	=	new Class({
 		Extends: Composer.Collection,
-		Implements: [Events],
 
 		master: null,
 		filter: null,
@@ -45,6 +44,9 @@
 				if(typeof(v) == 'function') v = v.bind(this);
 				this[k]	=	v;
 			}, this);
+
+			// assign the unique app id
+			this._cid	=	Composer.cid();
 
 			this.master	=	master;
 
