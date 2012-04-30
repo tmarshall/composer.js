@@ -769,7 +769,7 @@
 		{
 			if (data instanceof Array)
 			{
-				return Object.each(data, function(model) { this.add(model, options) }, this);
+				return Object.each(data, function(model) { this.add(model, options); }, this);
 			}
 			
 			options || (options = {});
@@ -813,7 +813,7 @@
 		{
 			if (model instanceof Array)
 			{
-				return Object.each(model, function(m) { this.remove(m) }, this);
+				return Object.each(model, function(m) { this.remove(m); }, this);
 			}
 			
 			options || (options = {});
@@ -880,6 +880,7 @@
 
 			this._models.each(function(model) {
 				this._remove_reference(model);
+				if(options.fire_remove_events) model.trigger('remove');
 			}, this);
 			this._models	=	[];
 
@@ -1501,7 +1502,7 @@
 				if(!this.options.suppress_initial_route)
 				{
 					// run the initial route
-					History.Adapter.trigger(global, 'statechange', [global.location.pathname])
+					History.Adapter.trigger(global, 'statechange', [global.location.pathname]);
 				}
 			}
 			else if(this.options.hash_fallback)
@@ -1717,7 +1718,7 @@
 			var next_tag_up = function(tag, element)
 			{
 				return element.get('tag') == tag ? element : next_tag_up(tag, element.getParent());
-			}
+			};
 
 			// bind our heroic pushState to the <a> tags we specified. this
 			// hopefully be that LAST event called for any <a> tag because it's
@@ -1787,7 +1788,7 @@
 				document.fireEvent('hashchange', value);
 			};
 
-			if ("onhashchange" in global){
+			if ("onhashchange" in global && !(Browser.ie && Browser.version < 8)){
 				global.onhashchange = hashchange;
 			} else {
 				hashchange.periodical(50);
@@ -1873,7 +1874,7 @@
 	Composer._export	=	function(exports)
 	{
 		exports.each(function(name) {
-			var _do_try	=	function(classname) { return 'try{'+classname+'}catch(e){false}'; }
+			var _do_try	=	function(classname) { return 'try{'+classname+'}catch(e){false}'; };
 			var cls	=	eval(_do_try(name)) || eval(_do_try('Composer.'+name));
 			if(!cls) return false;
 
