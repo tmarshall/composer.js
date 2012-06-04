@@ -156,7 +156,7 @@
 				// find the correct insertion point in the master it options.at is set.
 				var current		=	this.at(options.at);
 				var master_idx	=	this.master.index_of(current);
-				if(master_idx !== false)
+				if(master_idx > -1)
 				{
 					options.at	=	master_idx;
 				}
