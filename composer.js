@@ -850,7 +850,7 @@
 			{
 				// reposition the model if necessary
 				var existing_idx	=	this.index_of(existing);
-				if(typeof(options.at) == 'number' && existing_idx != options.at)
+				if(typeof(options.at) == 'number' && existing_idx > -1 && existing_idx != options.at)
 				{
 					this._models.splice(existing_idx, 1);
 					this._models.splice(options.at, 0, existing);
@@ -1063,7 +1063,7 @@
 					return i;
 				}
 			}
-			return false;
+			return -1;
 		},
 
 		/**
